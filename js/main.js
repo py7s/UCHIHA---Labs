@@ -4059,35 +4059,46 @@ async function downloadLauncher() {
     }
     var fileName = (platform === 'macos' ? 'UCHIHA-Launcher-macOS' : (platform === 'linux' ? 'UCHIHA-Launcher-linux' : 'UCHIHA-Launcher-Setup.exe'));
     var token = sessionStorage.getItem('uchiha_token');
-    var downloadBase = isElectron ? API_BASE_RAW : (isHttps ? null : API_BASE_RAW);
-    if (!downloadBase) {
-        showBanner('Download is only available in the UCHIHA Launcher desktop app or when the site is served over plain HTTP (not on the public web).', 'error');
-        return;
-    }
-    var url = downloadBase + '/api/launcher/download?platform=' + platform;
-    if (token) url += '&token=' + encodeURIComponent(token);
-    // Quick availability check
-    try {
-        var infoRes = await fetch(downloadBase + '/api/launcher/info');
-        if (infoRes.ok) {
-            var infoJson = await infoRes.json();
-            var plat = infoJson && infoJson.platforms && infoJson.platforms[platform];
-            if (!plat || !plat.available) {
-                showBanner('Launcher build is not available for ' + platform + ' yet. Please try again later.', 'error');
-                return;
+
+    // Decide where the download comes from.
+    // 1. Inside Electron desktop app: download via local backend (HTTP localhost).
+    // 2. Plain-HTTP web context (local development): download via local backend.
+    // 3. Public HTTPS site: download is not possible (mixed-content blocks it).
+    //    Instead, redirect the user to the GitHub Releases page where the
+    //    setup.exe is hosted as a release asset.
+    if (isElectron || !isHttps) {
+        var downloadBase = API_BASE_RAW;
+        var url = downloadBase + '/api/launcher/download?platform=' + platform;
+        if (token) url += '&token=' + encodeURIComponent(token);
+        // Quick availability check
+        try {
+            var infoRes = await fetch(downloadBase + '/api/launcher/info');
+            if (infoRes.ok) {
+                var infoJson = await infoRes.json();
+                var plat = infoJson && infoJson.platforms && infoJson.platforms[platform];
+                if (!plat || !plat.available) {
+                    showBanner('Launcher build is not available for ' + platform + ' yet. Please try again later.', 'error');
+                    return;
+                }
             }
+        } catch (e) {
+            showBanner('Cannot reach the backend. Make sure the UCHIHA backend is running on this machine.', 'error');
+            return;
         }
-    } catch (e) {
-        showBanner('Cannot reach the backend. Make sure the UCHIHA backend is running on this machine.', 'error');
-        return;
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } else {
+        // Public HTTPS site -> open GitHub Releases page where the latest
+        // Setup.exe is published as a release asset.
+        var releasesUrl = 'https://github.com/py7s/UCHIHA---Labs/releases/latest';
+        showBanner('Opening GitHub Releases page to download the launcher...', 'info');
+        window.open(releasesUrl, '_blank', 'noopener');
     }
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
