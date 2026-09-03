@@ -125,22 +125,10 @@ router.get('/launcher/info', async (req, res) => {
         if (f.exists) {
             try { size = fs.statSync(f.filePath).size; } catch (e) {}
         } else if (f.info.fallbackUrl) {
-            // Public deployments report the GitHub Release size (fixed
-            // value baked into the release). Use a HEAD request to the
-            // asset to discover the size at runtime; if it fails, fall
-            // back to a sentinel value so clients know it's available.
-            try {
-                const headRes = await new Promise(function(resolve, reject) {
-                    const lib = f.info.fallbackUrl.startsWith('https') ? require('https') : require('http');
-                    const reqHead = lib.request(f.info.fallbackUrl, { method: 'HEAD' }, function(r) { resolve(r); });
-                    reqHead.on('error', reject);
-                    reqHead.setTimeout(5000, function() { reqHead.destroy(new Error('timeout')); });
-                    reqHead.end();
-                });
-                size = parseInt(headRes.headers['content-length'] || '0', 10) || 0;
-            } catch (e) {
-                size = 0;
-            }
+            // For public deployments the binary is on GitHub Releases.
+            // We don't HEAD it (slow + fragile), the client gets the
+            // exact size when it follows the redirect.
+            size = 0;
         }
         platforms[p] = {
             available: available,
@@ -184,7 +172,7 @@ router.get('/launcher/download', (req, res) => {
             userId = decoded.sub;
         } catch (e) {}
     }
-    logDownload(userId, platform, req.ip, req.headers['user-agent']);
+    try { logDownload(userId, platform, req.ip, req.headers['user-agent']); } catch (e) {}
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Disposition', 'attachment; filename="' + info.display.replace(/[\r\n"]/g, '') + '"');
     res.setHeader('Content-Length', fs.statSync(filePath).size);
