@@ -601,6 +601,36 @@
     })();
 
     </script>
+
+    <!-- Custom download manager modal (UCHIHA styled) -->
+    <div class="uchiha-download-modal" id="uchihaDownloadModal" style="display:none;">
+        <div class="uchiha-download-panel">
+            <div class="uchiha-download-header">
+                <div class="uchiha-download-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </div>
+                <div class="uchiha-download-title">
+                    <h3 id="uchihaDownloadTitle">Downloading UCHIHA Launcher</h3>
+                    <p id="uchihaDownloadSubtitle">Starting download...</p>
+                </div>
+                <button class="uchiha-download-close" id="uchihaDownloadClose" aria-label="Hide">&times;</button>
+            </div>
+            <div class="uchiha-download-body">
+                <div class="uchiha-progress">
+                    <div class="uchiha-progress-bar" id="uchihaProgressBar"></div>
+                </div>
+                <div class="uchiha-progress-info">
+                    <span id="uchihaProgressPercent">0%</span>
+                    <span id="uchihaProgressSize">0 MB / 0 MB</span>
+                </div>
+                <div class="uchiha-download-actions">
+                    <button class="uchiha-btn uchiha-btn-secondary" id="uchihaDownloadCancel">Cancel</button>
+                    <button class="uchiha-btn uchiha-btn-primary" id="uchihaDownloadOpen" style="display:none;">Open file</button>
+                </div>
+                <div class="uchiha-download-error" id="uchihaDownloadError" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

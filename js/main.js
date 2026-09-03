@@ -2,19 +2,41 @@ const API_BASE_RAW = 'http://localhost:3000';
 const CF_WORKER = 'http://localhost:3000';
 const isElectron = !!(window.uchihaLauncher && window.uchihaLauncher.isDesktop);
 const isHttps = window.location.protocol === 'https:';
+const isPublicHttps = isHttps && !isElectron;
 function apiUrl(path) {
     // In Electron desktop app, always use plain HTTP localhost backend.
     if (isElectron) return API_BASE_RAW + path;
     // If the site is served over HTTPS, mixed content rules block plain
-    // HTTP requests to localhost. We can still hit the user's own machine
-    // through 127.0.0.1, but most browsers will block that too. Best is
-    // to skip the call entirely if no public API is configured; the user
-    // will see the cached/logged-out UI until a real HTTPS API is wired.
+    // HTTP requests to localhost. The frontend then makes relative-URL
+    // requests that GitHub Pages answers with 404 (no backend there).
+    // Callers should treat 404 on /api/* as "backend offline" and show
+    // a friendly message instead of crashing.
     if (isHttps && API_BASE_RAW.startsWith('http://')) {
         return path;
     }
     return API_BASE_RAW + path;
 }
+
+// Wrap fetch to silently swallow 404s on /api/* when running on the
+// public HTTPS site (no backend available). The real backend on the
+// user's local machine is only reachable from the Electron app or
+// from a plain-HTTP dev context.
+(function() {
+    if (typeof window === 'undefined' || !window.fetch) return;
+    var origFetch = window.fetch.bind(window);
+    window.fetch = function(input, init) {
+        var url = (typeof input === 'string') ? input : (input && input.url) || '';
+        if (isPublicHttps && url.indexOf('/api/') >= 0) {
+            // Public site, no backend. Return a fake 503 so callers that
+            // .ok-check the response skip silently instead of throwing.
+            return Promise.resolve(new Response(
+                JSON.stringify({ detail: 'Backend offline. Launch the desktop app for full functionality.' }),
+                { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        return origFetch(input, init);
+    };
+})();
 
 function profilePicUrl(profilePicturePath) {
     if (!profilePicturePath) return '';
@@ -4049,6 +4071,102 @@ function renderGithubProfileStats(container, udata, username, profileEntry) {
     container.appendChild(card);
 }
 
+function customDownloadFile(url, fileName) {
+    return new Promise(function(resolve, reject) {
+        var modal = document.getElementById('uchihaDownloadModal');
+        var bar = document.getElementById('uchihaProgressBar');
+        var pct = document.getElementById('uchihaProgressPercent');
+        var sizeEl = document.getElementById('uchihaProgressSize');
+        var subtitle = document.getElementById('uchihaDownloadSubtitle');
+        var cancelBtn = document.getElementById('uchihaDownloadCancel');
+        var openBtn = document.getElementById('uchihaDownloadOpen');
+        var closeBtn = document.getElementById('uchihaDownloadClose');
+        var errEl = document.getElementById('uchihaDownloadError');
+        if (!modal) {
+            // Fallback to native browser download
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            resolve();
+            return;
+        }
+        var xhr = new XMLHttpRequest();
+        var blobUrl = null;
+        function cleanup() {
+            if (blobUrl) { try { URL.revokeObjectURL(blobUrl); } catch(e){} blobUrl = null; }
+            if (cancelBtn) cancelBtn.onclick = null;
+            if (openBtn) openBtn.onclick = null;
+            if (closeBtn) closeBtn.onclick = null;
+        }
+        function showError(msg) {
+            if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+            if (subtitle) subtitle.textContent = 'Download failed';
+            if (cancelBtn) { cancelBtn.textContent = 'Close'; cancelBtn.onclick = function() { modal.style.display = 'none'; cleanup(); reject(new Error(msg)); }; }
+        }
+        function fmt(b) {
+            if (b < 1024) return b + ' B';
+            if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+            if (b < 1024*1024*1024) return (b/1024/1024).toFixed(1) + ' MB';
+            return (b/1024/1024/1024).toFixed(2) + ' GB';
+        }
+        modal.style.display = 'flex';
+        if (errEl) errEl.style.display = 'none';
+        if (bar) bar.style.width = '0%';
+        if (pct) pct.textContent = '0%';
+        if (sizeEl) sizeEl.textContent = 'Connecting...';
+        if (subtitle) subtitle.textContent = 'Connecting to server...';
+        if (openBtn) openBtn.style.display = 'none';
+        if (cancelBtn) { cancelBtn.textContent = 'Cancel'; cancelBtn.onclick = function() { xhr.abort(); modal.style.display = 'none'; cleanup(); reject(new Error('Cancelled')); }; }
+        if (closeBtn) { closeBtn.onclick = function() { modal.style.display = 'none'; }; }
+        xhr.open('GET', url, true);
+        xhr.responseType = 'blob';
+        xhr.onprogress = function(e) {
+            if (e.lengthComputable) {
+                var p = Math.round(e.loaded / e.total * 100);
+                if (bar) bar.style.width = p + '%';
+                if (pct) pct.textContent = p + '%';
+                if (sizeEl) sizeEl.textContent = fmt(e.loaded) + ' / ' + fmt(e.total);
+                if (subtitle) subtitle.textContent = 'Downloading ' + fileName;
+            } else if (e.loaded) {
+                if (sizeEl) sizeEl.textContent = fmt(e.loaded) + ' downloaded';
+                if (subtitle) subtitle.textContent = 'Downloading...';
+            }
+        };
+        xhr.onerror = function() { showError('Network error. Check your connection.'); };
+        xhr.onabort = function() { modal.style.display = 'none'; cleanup(); reject(new Error('Aborted')); };
+        xhr.ontimeout = function() { showError('Download timed out.'); };
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                if (bar) bar.style.width = '100%';
+                if (pct) pct.textContent = '100%';
+                var total = xhr.response.size;
+                if (sizeEl) sizeEl.textContent = fmt(total) + ' / ' + fmt(total);
+                if (subtitle) subtitle.textContent = 'Download complete';
+                if (cancelBtn) { cancelBtn.textContent = 'Close'; cancelBtn.onclick = function() { modal.style.display = 'none'; cleanup(); resolve(); }; }
+                if (openBtn) {
+                    openBtn.style.display = 'inline-block';
+                    blobUrl = URL.createObjectURL(xhr.response);
+                    openBtn.onclick = function() { window.open(blobUrl, '_blank'); };
+                }
+                // Auto-trigger save dialog via anchor with object URL
+                blobUrl = URL.createObjectURL(xhr.response);
+                var a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                showError('Server returned ' + xhr.status + '. The file may not be available right now.');
+            }
+        };
+        xhr.send();
+    });
+}
+
 async function downloadLauncher() {
     var ua = navigator.userAgent || '';
     var platform = 'windows';
@@ -4057,27 +4175,21 @@ async function downloadLauncher() {
     } else if (/Linux/i.test(ua) && !/Android/i.test(ua) && !/Windows/i.test(ua)) {
         platform = 'linux';
     }
-    var fileName = (platform === 'macos' ? 'UCHIHA-Launcher-macOS' : (platform === 'linux' ? 'UCHIHA-Launcher-linux' : 'UCHIHA-Launcher-Setup.exe'));
+    var fileName = (platform === 'macos' ? 'UCHIHA-Launcher-macOS.dmg' : (platform === 'linux' ? 'UCHIHA-Launcher-linux.AppImage' : 'UCHIHA-Launcher-Setup.exe'));
     var token = sessionStorage.getItem('uchiha_token');
 
-    // Decide where the download comes from.
-    // 1. Inside Electron desktop app: download via local backend (HTTP localhost).
-    // 2. Plain-HTTP web context (local development): download via local backend.
-    // 3. Public HTTPS site: download is not possible (mixed-content blocks it).
-    //    Instead, redirect the user to the GitHub Releases page where the
-    //    setup.exe is hosted as a release asset.
     if (isElectron || !isHttps) {
+        // Local / Electron: download via backend
         var downloadBase = API_BASE_RAW;
         var url = downloadBase + '/api/launcher/download?platform=' + platform;
         if (token) url += '&token=' + encodeURIComponent(token);
-        // Quick availability check
         try {
             var infoRes = await fetch(downloadBase + '/api/launcher/info');
             if (infoRes.ok) {
                 var infoJson = await infoRes.json();
                 var plat = infoJson && infoJson.platforms && infoJson.platforms[platform];
                 if (!plat || !plat.available) {
-                    showBanner('Launcher build is not available for ' + platform + ' yet. Please try again later.', 'error');
+                    showBanner('Launcher build is not available for ' + platform + ' yet.', 'error');
                     return;
                 }
             }
@@ -4085,20 +4197,43 @@ async function downloadLauncher() {
             showBanner('Cannot reach the backend. Make sure the UCHIHA backend is running on this machine.', 'error');
             return;
         }
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.rel = 'noopener';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        try {
+            await customDownloadFile(url, fileName);
+        } catch (e) {
+            // user cancelled or error already shown
+        }
     } else {
-        // Public HTTPS site -> direct download from the latest GitHub
-        // Release asset. URL is /releases/latest/ which always resolves
-        // to the most recent published tag.
+        // Public HTTPS site: custom download manager against GitHub Releases
         var assetUrl = 'https://github.com/py7s/UCHIHA---Labs/releases/latest/download/UCHIHA-Launcher-Setup.exe';
-        showBanner('Downloading UCHIHA-Launcher-Setup.exe from GitHub Releases...', 'info');
-        window.location.href = assetUrl;
+        var banner = document.createElement('div');
+        banner.className = 'uchiha-download-modal';
+        banner.id = 'uchihaDownloadModal';
+        banner.style.display = 'flex';
+        banner.innerHTML = '<div class="uchiha-download-panel">' +
+            '<div class="uchiha-download-header">' +
+            '<div class="uchiha-download-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></div>' +
+            '<div class="uchiha-download-title"><h3>Downloading UCHIHA Launcher</h3><p>From GitHub Releases...</p></div>' +
+            '<button class="uchiha-download-close" onclick="this.closest(\'.uchiha-download-modal\').style.display=\'none\'">&times;</button>' +
+            '</div>' +
+            '<div class="uchiha-download-body">' +
+            '<div class="uchiha-progress"><div class="uchiha-progress-bar" id="uchihaProgressBarInline" style="width:100%;animation:none;background:#d60000"></div></div>' +
+            '<p style="margin-top:14px;color:#cc8080;font-size:12px;">Redirecting to github.com in <span id="uchihaCountdown">3</span>s...</p>' +
+            '<div class="uchiha-download-actions">' +
+            '<button class="uchiha-btn uchiha-btn-secondary" onclick="this.closest(\'.uchiha-download-modal\').style.display=\'none\'">Cancel</button>' +
+            '<button class="uchiha-btn uchiha-btn-primary" id="uchihaGoNow">Go now</button>' +
+            '</div></div></div>';
+        document.body.appendChild(banner);
+        var sec = 3;
+        var tick = function() {
+            var c = document.getElementById('uchihaCountdown');
+            if (c) c.textContent = sec;
+            if (sec <= 0) { window.location.href = assetUrl; return; }
+            sec--;
+            setTimeout(tick, 1000);
+        };
+        tick();
+        var goNow = document.getElementById('uchihaGoNow');
+        if (goNow) goNow.onclick = function() { window.location.href = assetUrl; };
     }
 }
 

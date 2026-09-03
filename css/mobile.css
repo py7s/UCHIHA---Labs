@@ -4,6 +4,173 @@
    - All mobile-first overrides, never breaks desktop
    ============================================================ */
 
+/* ---------- Custom Download Manager Modal ---------- */
+.uchiha-download-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: uchiha-fadein 0.2s ease;
+}
+@keyframes uchiha-fadein {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.uchiha-download-panel {
+    background: linear-gradient(180deg, rgba(20, 5, 5, 0.95) 0%, rgba(10, 0, 0, 0.98) 100%);
+    border: 1px solid rgba(214, 0, 0, 0.4);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(214, 0, 0, 0.15);
+    width: 100%;
+    max-width: 480px;
+    color: #fff;
+    overflow: hidden;
+    animation: uchiha-slidein 0.25s ease;
+}
+@keyframes uchiha-slidein {
+    from { transform: translateY(20px) scale(0.95); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+.uchiha-download-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    background: linear-gradient(90deg, rgba(214, 0, 0, 0.15) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(214, 0, 0, 0.2);
+}
+.uchiha-download-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #d60000 0%, #8a0000 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(214, 0, 0, 0.4);
+    flex-shrink: 0;
+}
+.uchiha-download-title {
+    flex: 1;
+    min-width: 0;
+}
+.uchiha-download-title h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+}
+.uchiha-download-title p {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #cc8080;
+}
+.uchiha-download-close {
+    background: transparent;
+    border: none;
+    color: #ff8080;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 8px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+.uchiha-download-close:hover {
+    background: rgba(214, 0, 0, 0.15);
+}
+.uchiha-download-body {
+    padding: 20px;
+}
+.uchiha-progress {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+}
+.uchiha-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #d60000 0%, #ff4d4d 50%, #d60000 100%);
+    background-size: 200% 100%;
+    border-radius: 999px;
+    transition: width 0.2s ease;
+    animation: uchiha-progress-shine 1.5s linear infinite;
+    box-shadow: 0 0 8px rgba(214, 0, 0, 0.6);
+}
+@keyframes uchiha-progress-shine {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.uchiha-progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #ffb1b1;
+    font-variant-numeric: tabular-nums;
+}
+.uchiha-download-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    justify-content: flex-end;
+}
+.uchiha-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+.uchiha-btn-primary {
+    background: linear-gradient(135deg, #d60000 0%, #a80000 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(214, 0, 0, 0.3);
+}
+.uchiha-btn-primary:hover {
+    background: linear-gradient(135deg, #ff1a1a 0%, #c00 100%);
+    transform: translateY(-1px);
+}
+.uchiha-btn-secondary {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffb1b1;
+    border: 1px solid rgba(214, 0, 0, 0.3);
+}
+.uchiha-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+.uchiha-download-error {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(214, 0, 0, 0.15);
+    border: 1px solid rgba(214, 0, 0, 0.3);
+    border-radius: 8px;
+    color: #ff8080;
+    font-size: 13px;
+}
+@media (max-width: 480px) {
+    .uchiha-download-panel {
+        max-width: 100%;
+    }
+    .uchiha-download-header {
+        padding: 14px 16px;
+    }
+    .uchiha-download-body {
+        padding: 16px;
+    }
+}
+
 /* ---------- Tablet landscape & smaller ---------- */
 @media (max-width: 1024px) {
     .sidebar {
