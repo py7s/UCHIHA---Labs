@@ -4057,13 +4057,18 @@ async function downloadLauncher() {
     } else if (/Linux/i.test(ua) && !/Android/i.test(ua) && !/Windows/i.test(ua)) {
         platform = 'linux';
     }
-    var fileName = (platform === 'macos' ? 'UCHIHA-Launcher-macOS' : (platform === 'linux' ? 'UCHIHA-Launcher-linux' : 'UCHIHA-Launcher.exe'));
+    var fileName = (platform === 'macos' ? 'UCHIHA-Launcher-macOS' : (platform === 'linux' ? 'UCHIHA-Launcher-linux' : 'UCHIHA-Launcher-Setup.exe'));
     var token = sessionStorage.getItem('uchiha_token');
-    var url = apiUrl('/api/launcher/download?platform=' + platform);
+    var downloadBase = isElectron ? API_BASE_RAW : (isHttps ? null : API_BASE_RAW);
+    if (!downloadBase) {
+        showBanner('Download is only available in the UCHIHA Launcher desktop app or when the site is served over plain HTTP (not on the public web).', 'error');
+        return;
+    }
+    var url = downloadBase + '/api/launcher/download?platform=' + platform;
     if (token) url += '&token=' + encodeURIComponent(token);
-    // Quick availability check via /api/launcher/info (small JSON, no body streaming)
+    // Quick availability check
     try {
-        var infoRes = await fetch(apiUrl('/api/launcher/info'));
+        var infoRes = await fetch(downloadBase + '/api/launcher/info');
         if (infoRes.ok) {
             var infoJson = await infoRes.json();
             var plat = infoJson && infoJson.platforms && infoJson.platforms[platform];
@@ -4072,7 +4077,10 @@ async function downloadLauncher() {
                 return;
             }
         }
-    } catch (e) {}
+    } catch (e) {
+        showBanner('Cannot reach the backend. Make sure the UCHIHA backend is running on this machine.', 'error');
+        return;
+    }
     var a = document.createElement('a');
     a.href = url;
     a.download = fileName;
