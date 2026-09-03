@@ -4093,11 +4093,12 @@ async function downloadLauncher() {
         a.click();
         document.body.removeChild(a);
     } else {
-        // Public HTTPS site -> open GitHub Releases page where the latest
-        // Setup.exe is published as a release asset.
-        var releasesUrl = 'https://github.com/py7s/UCHIHA---Labs/releases/latest';
-        showBanner('Opening GitHub Releases page to download the launcher...', 'info');
-        window.open(releasesUrl, '_blank', 'noopener');
+        // Public HTTPS site -> direct download from the latest GitHub
+        // Release asset. URL is /releases/latest/ which always resolves
+        // to the most recent published tag.
+        var assetUrl = 'https://github.com/py7s/UCHIHA---Labs/releases/latest/download/UCHIHA-Launcher-Setup.exe';
+        showBanner('Downloading UCHIHA-Launcher-Setup.exe from GitHub Releases...', 'info');
+        window.location.href = assetUrl;
     }
 }
 
