@@ -1,18 +1,18 @@
-// Public backend (Render.com). When the user is on the public HTTPS
-// site at uchiha-market.com, the backend they talk to is the one
-// hosted on Render. In Electron, the API base is supplied by the
-// launcher (see preload.js -> uchihaLauncher.getInfo().apiBase) so
-// the user can change it in settings; until that promise resolves
-// we fall back to the Render URL. In a plain-HTTP dev context, we
-// fall back to localhost.
+// Public backend (Render.com). The backend is hosted on Render at
+// uchiha-backend-d1n7.onrender.com. The Electron launcher can
+// optionally override this via the settings modal (see
+// setupBackendSettings) and the resolved value is pushed into
+// window.__UCHIHA_API_BASE__ by the launcher main process.
 const DEFAULT_API_BASE = 'https://uchiha-backend-d1n7.onrender.com';
 const API_BASE_RAW = (function() {
-    if (typeof window === 'undefined') return 'http://localhost:3000';
+    if (typeof window === 'undefined') return DEFAULT_API_BASE;
     var isElectron = !!(window.uchihaLauncher && window.uchihaLauncher.isDesktop);
     var isHttps = window.location.protocol === 'https:';
     if (isElectron && window.uchihaLauncher && typeof window.uchihaLauncher.getInfo === 'function') {
-        // Resolve the actual base from the launcher as soon as the
-        // page loads; this keeps the rest of the code synchronous.
+        // Ask the launcher for the configured base. The promise
+        // resolves once the Electron main process pushes its
+        // settings, so by the time the user logs in we know the
+        // right URL.
         try {
             window.uchihaLauncher.getInfo().then(function(info) {
                 if (info && info.apiBase) {
@@ -20,13 +20,10 @@ const API_BASE_RAW = (function() {
                 }
             }).catch(function() {});
         } catch (e) {}
-        // Provisional base until the IPC resolves; in the meantime
-        // default to the public backend so the user can still log
-        // in and see products even before the IPC replies.
         return DEFAULT_API_BASE;
     }
     if (isHttps) return DEFAULT_API_BASE;
-    return 'http://localhost:3000';
+    return DEFAULT_API_BASE;
 })();
 // Returns the *current* best-known API base, prefering the value
 // the Electron main process gave us via getInfo().
@@ -1295,7 +1292,12 @@ async function loginUser(usernameOrEmail, password) {
     } catch(e) {
         var reason = (e && e.message) ? e.message : 'Unknown error';
         if (reason.indexOf('Failed to fetch') >= 0 || reason.indexOf('NetworkError') >= 0 || reason.indexOf('CONNECTION_REFUSED') >= 0) {
-            showBanner('Backend nicht erreichbar. Bitte versuche es später erneut.', 'error');
+            var base = (typeof currentApiBase === 'function' ? currentApiBase() : (window.__UCHIHA_API_BASE__ || ''));
+            var hint = '';
+            if (window.uchihaLauncher && window.uchihaLauncher.isDesktop) {
+                hint = ' Currently using: ' + (base || '(no base)');
+            }
+            showBanner('Backend nicht erreichbar. Bitte versuche es später erneut.' + hint, 'error');
         } else {
             showBanner('Login fehlgeschlagen: ' + reason, 'error');
         }
@@ -3281,6 +3283,71 @@ function setupLoginRegisterButtons() {
     }
 }
 
+function setupBackendSettings() {
+    var btn = document.getElementById('backendSettingsBtn');
+    if (!btn) return;
+    if (!(window.uchihaLauncher && window.uchihaLauncher.isDesktop)) {
+        // Public website: keep the button hidden.
+        return;
+    }
+    btn.style.display = '';
+    var modal = document.getElementById('backendSettingsModal');
+    var input = document.getElementById('backendSettingsInput');
+    var status = document.getElementById('backendSettingsStatus');
+    var testBtn = document.getElementById('backendSettingsTest');
+    var resetBtn = document.getElementById('backendSettingsReset');
+    var closeBtn = document.getElementById('backendSettingsClose');
+    if (!modal || !input || !testBtn || !resetBtn || !closeBtn) return;
+
+    function refresh() {
+        if (window.uchihaLauncher && typeof window.uchihaLauncher.getInfo === 'function') {
+            window.uchihaLauncher.getInfo().then(function(info) {
+                if (info && info.apiBase) input.value = info.apiBase;
+                else input.value = (window.__UCHIHA_API_BASE__ || '');
+            });
+        } else {
+            input.value = (window.__UCHIHA_API_BASE__ || '');
+        }
+    }
+    btn.addEventListener('click', function() {
+        refresh();
+        status.textContent = '';
+        modal.style.display = 'flex';
+    });
+    closeBtn.addEventListener('click', function() { modal.style.display = 'none'; });
+    resetBtn.addEventListener('click', function() {
+        input.value = 'https://uchiha-backend-d1n7.onrender.com';
+        status.textContent = 'Reset to default. Click Test & Save.';
+    });
+    testBtn.addEventListener('click', async function() {
+        var v = String(input.value || '').trim().replace(/\/+$/, '');
+        if (!/^https?:\/\//.test(v)) {
+            status.style.color = '#ff8080';
+            status.textContent = 'URL must start with http:// or https://';
+            return;
+        }
+        status.style.color = '#ffb1b1';
+        status.textContent = 'Testing ' + v + ' ...';
+        try {
+            var res = await fetch(v.replace(/\/+$/, '') + '/health', { cache: 'no-store' });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            var j = await res.json();
+            if (!j || j.ok !== true) throw new Error('Unexpected response');
+            status.style.color = '#a8ffa8';
+            status.textContent = 'OK — backend reachable. Saving...';
+            if (window.uchihaLauncher && typeof window.uchihaLauncher.setApiBase === 'function') {
+                await window.uchihaLauncher.setApiBase(v);
+                window.__UCHIHA_API_BASE__ = v;
+            }
+            status.textContent = 'Saved. Reloading...';
+            setTimeout(function() { window.location.reload(); }, 700);
+        } catch (e) {
+            status.style.color = '#ff8080';
+            status.textContent = 'Failed: ' + (e && e.message ? e.message : 'unknown');
+        }
+    });
+}
+
 function setupProfileSidebar() {
     var profileBtn = document.getElementById('userProfileBtn');
     var sidebar = document.getElementById('profileSidebar');
@@ -4334,6 +4401,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupTabs();
     setupLoginRegisterButtons();
     setupProfileSidebar();
+    setupBackendSettings();
     updateLanguage();
     updateCartBadge();
 

@@ -5,21 +5,76 @@ const fs = require('fs');
 const { pathToFileURL } = require('url');
 
 const SETTINGS_FILE = () => path.join(app.getPath('userData'), 'launcher-settings.json');
+// The backend is hosted on Render.com. There is no local-only
+// fallback — every install talks to the same public instance.
 const DEFAULT_API = 'https://uchiha-backend-d1n7.onrender.com';
 
 function loadSettings() {
     try {
         if (fs.existsSync(SETTINGS_FILE())) {
             const raw = JSON.parse(fs.readFileSync(SETTINGS_FILE(), 'utf8'));
-            // Migrate stale defaults from the old localhost-only build
-            // so existing users do not get a "backend offline" error.
-            if (raw.apiBase === 'http://localhost:3000') {
+            // Reset any old localhost setting that previous versions
+            // of the launcher used. We only ever talk to Render.
+            if (raw.apiBase && /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(raw.apiBase)) {
                 raw.apiBase = DEFAULT_API;
             }
             return raw;
         }
     } catch (e) {}
     return { apiBase: DEFAULT_API, token: null, user: null };
+}
+
+// Probe the backend. Returns a promise that resolves true if the
+// /health endpoint responds with { ok: true } within `ms`
+// milliseconds, false otherwise. Never throws.
+function probeBackend(base, ms) {
+    return new Promise(resolve => {
+        const url = String(base || '').replace(/\/+$/, '') + '/health';
+        let done = false;
+        const finish = (ok) => { if (!done) { done = true; resolve(ok); } };
+        const timer = setTimeout(() => finish(false), ms || 3000);
+        try {
+            const lib = url.startsWith('https') ? require('https') : require('http');
+            const u = new URL(url);
+            const opts = { hostname: u.hostname, port: u.port || (u.protocol === 'https:' ? 443 : 80), path: u.pathname, method: 'GET', timeout: ms || 3000, headers: { 'User-Agent': 'uchiha-launcher' } };
+            const r = lib.request(opts, res => {
+                let data = '';
+                res.on('data', c => data += c);
+                res.on('end', () => {
+                    clearTimeout(timer);
+                    try {
+                        const j = JSON.parse(data);
+                        finish(res.statusCode >= 200 && res.statusCode < 300 && j && j.ok === true);
+                    } catch (e) { finish(false); }
+                });
+            });
+            r.on('error', () => { clearTimeout(timer); finish(false); });
+            r.on('timeout', () => { try { r.destroy(); } catch (e) {} clearTimeout(timer); finish(false); });
+            r.end();
+        } catch (e) {
+            clearTimeout(timer);
+            finish(false);
+        }
+    });
+}
+
+// Verify the configured backend is reachable at startup. If the
+// saved URL is different from the default, we still prefer it
+// (the user explicitly set it) but only after it answers /health.
+async function resolveApiBase() {
+    const candidates = [];
+    if (settings.apiBase && settings.apiBase !== DEFAULT_API) candidates.push(settings.apiBase);
+    candidates.push(DEFAULT_API);
+    for (const c of candidates) {
+        if (await probeBackend(c, 2500)) {
+            settings.apiBase = c;
+            saveSettings(settings);
+            return c;
+        }
+    }
+    // Nothing answered; keep what we have and let the in-app
+    // "Backend" button surface the error to the user.
+    return settings.apiBase || DEFAULT_API;
 }
 
 function saveSettings(s) {
@@ -193,7 +248,8 @@ ipcMain.handle('launcher:downloadLauncherExe', async () => {
     }
 });
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+    try { await resolveApiBase(); } catch (e) { /* keep default */ }
     createWindow();
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();

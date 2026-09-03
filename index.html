@@ -269,6 +269,11 @@
                         <button id="registerBtn" class="auth-btn register-btn">Register</button>
                     </div>
 
+                    <button class="icon-action-btn" id="backendSettingsBtn" style="display:none;" title="Backend settings">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        <span>Backend</span>
+                    </button>
+
                     <button class="user-profile-btn" id="userProfileBtn" style="display:none;">
                         <video class="nameplate-bg" id="nameplateBg" autoplay loop muted playsinline></video>
                         <div class="profile-img-wrap" id="profileImageWrap">
@@ -628,6 +633,31 @@
                     <button class="uchiha-btn uchiha-btn-primary" id="uchihaDownloadOpen" style="display:none;">Open file</button>
                 </div>
                 <div class="uchiha-download-error" id="uchihaDownloadError" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backend settings modal (Electron only) -->
+    <div class="uchiha-download-modal" id="backendSettingsModal" style="display:none;">
+        <div class="uchiha-download-panel" style="max-width:520px;">
+            <div class="uchiha-download-header">
+                <div class="uchiha-download-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </div>
+                <div class="uchiha-download-title">
+                    <h3>Backend Settings</h3>
+                    <p>Choose which UCHIHA backend the launcher talks to.</p>
+                </div>
+                <button class="uchiha-download-close" id="backendSettingsClose" aria-label="Hide">&times;</button>
+            </div>
+            <div class="uchiha-download-body" style="text-align:left;">
+                <label style="display:block;font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">Backend URL</label>
+                <input id="backendSettingsInput" type="text" placeholder="https://..." style="width:100%;padding:10px 12px;background:rgba(32,0,0,0.65);border:1px solid rgba(200,0,0,0.40);border-radius:8px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;" />
+                <div id="backendSettingsStatus" style="margin-top:10px;font-size:12px;color:var(--text-tertiary);"></div>
+                <div class="uchiha-download-actions" style="margin-top:14px;">
+                    <button class="uchiha-btn uchiha-btn-secondary" id="backendSettingsReset">Reset to default</button>
+                    <button class="uchiha-btn uchiha-btn-primary" id="backendSettingsTest">Test &amp; Save</button>
+                </div>
             </div>
         </div>
     </div>
