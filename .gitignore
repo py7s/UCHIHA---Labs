@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+launcher-build/dist/
+launcher-build/build-output/
+launcher-build/release/
+launcher-build/release_*/
+launcher-build/out-*/
+launcher-build/UCHIHA-Launcher.exe
+launcher-build/*.log
+
+# Backend runtime data
+backend/data/uchiha.db
+backend/data/uchiha.db-journal
+backend/data/uchiha.db-wal
+backend/data/uchiha.db-shm
+backend/data/uploads/
+backend/data/downloads/
+!backend/data/downloads/.gitkeep
+backend/data/config.json
+backend/data/config.local.json
+backend/.env
+backend/.env.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Electron
+*.exe
+*.dll
+*.dylib
+*.so
+dist/
+out/
+
+# Temporary
+*.tmp
+*.bak
+~$*

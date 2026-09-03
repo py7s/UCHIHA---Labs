@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCHIHA - Labs© - Payment Methods</title>
+    <link rel="stylesheet" href="../css/account_settings.css">
+    <link rel="icon" type="image/png" href="../images/main/logo.webp">
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-sidebar">
+            <div class="settings-logo">
+                <img src="../images/main/r_l_logo_1.webp" alt="Logo" onerror="this.style.display='none'">
+                <h2>UCHIHA - Labs©</h2>
+            </div>
+            <nav class="settings-nav">
+                <a href="../index.html" class="settings-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    </svg>
+                    <span>Back to Store</span>
+                </a>
+                <a href="account_settings.html" class="settings-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>Account Settings</span>
+                </a>
+                <a href="preferences.html" class="settings-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>Preferences</span>
+                </a>
+                <a href="payment_methods.html" class="settings-nav-item active">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>Payment Methods</span>
+                </a>
+                <a href="order_history.html" class="settings-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    <span>Order History</span>
+                </a>
+                <a href="help_and_support.html" class="settings-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <span>Help & Support</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="settings-content">
+<div class="settings-header">
+                <h1>Payment Methods</h1>
+                <p>Manage your saved payment methods and preferred checkout options.</p>
+            </div>
+
+            <div class="settings-section">
+                <h3>Saved Payment Methods</h3>
+                <div class="info-grid" id="savedMethodsGrid">
+                    <div class="info-item">
+                        <label>Default</label>
+                        <span id="defaultPayment">Credit Card</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Card</label>
+                        <span id="savedCard">•••• 4242</span>
+                        <span class="long-text">Visa ending in 4242</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Crypto</label>
+                        <span id="savedCrypto">BTC •••• 4F2a</span>
+                        <span class="long-text">Bitcoin Wallet</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Add New Payment Method</h3>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label>Payment Type</label>
+                        <select class="form-control" id="paymentTypeSelect">
+                            <option value="card">Credit / Debit Card</option>
+                            <option value="crypto">Cryptocurrency</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cardholder Name</label>
+                        <input type="text" id="cardholderName" class="form-control" placeholder="Full name on the card">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <input type="text" id="cardNumber" class="form-control" placeholder="1234 5678 9012 3456" inputmode="numeric">
+                    </div>
+
+                    <div class="info-grid">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" id="cardExpiry" class="form-control" placeholder="MM/YY">
+                        </div>
+                        <div class="form-group">
+                            <label>CVC</label>
+                            <input type="text" id="cardCvc" class="form-control" placeholder="123" inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <small>Your payment details are encrypted and securely stored. We never share your information.</small>
+                </div>
+            </div>
+
+            <div class="settings-actions">
+                <button class="btn-primary" id="savePaymentBtn">Save Payment Method</button>
+                <button class="btn-secondary" id="cancelPaymentBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/account_settings.js"></script>
+</body>
+
+</html>
