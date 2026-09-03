@@ -1,8 +1,17 @@
 const API_BASE_RAW = 'http://localhost:3000';
 const CF_WORKER = 'http://localhost:3000';
+const isElectron = !!(window.uchihaLauncher && window.uchihaLauncher.isDesktop);
+const isHttps = window.location.protocol === 'https:';
 function apiUrl(path) {
-    if (window.location.protocol === 'https:') {
-        return CF_WORKER + path;
+    // In Electron desktop app, always use plain HTTP localhost backend.
+    if (isElectron) return API_BASE_RAW + path;
+    // If the site is served over HTTPS, mixed content rules block plain
+    // HTTP requests to localhost. We can still hit the user's own machine
+    // through 127.0.0.1, but most browsers will block that too. Best is
+    // to skip the call entirely if no public API is configured; the user
+    // will see the cached/logged-out UI until a real HTTPS API is wired.
+    if (isHttps && API_BASE_RAW.startsWith('http://')) {
+        return path;
     }
     return API_BASE_RAW + path;
 }
@@ -2177,7 +2186,7 @@ function userNameColor(userLike) {
 }
 
 function userNameplateSrc(userLike) {
-    var nameplateFile = (userLike && userLike.nameplate) || (config && config.default_nameplate) || 'spirit_blossom_petrals.webm';
+    var nameplateFile = (userLike && userLike.nameplate) || (config && config.default_nameplate) || 'spirit_blossom_petrals.webp';
     return './images/assets/nameplates/' + nameplateFile;
 }
 
@@ -3462,7 +3471,7 @@ async function loadPartners() {
         var paths = ['./config/partner.json', './partner.json'];
         for (var i = 0; i < paths.length; i++) {
             try {
-                var res = await fetch(paths[i]);
+                var res = await fetch(paths[i], { cache: 'no-store' });
                 if (res.ok) { data = await res.json(); break; }
             } catch(e) {}
         }
@@ -4229,18 +4238,28 @@ function setupMobileMenu() {
     var overlay = document.getElementById('sidebarOverlay');
     var closeBtn = document.getElementById('sidebarCloseBtn');
     function openSidebar() {
-        if (sidebar) sidebar.classList.add('mobile-active');
-        if (overlay) overlay.classList.add('mobile-active');
+        if (sidebar) sidebar.classList.add('open');
+        if (overlay) overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
     }
     function closeSidebar() {
-        if (sidebar) sidebar.classList.remove('mobile-active');
-        if (overlay) overlay.classList.remove('mobile-active');
+        if (sidebar) sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('open');
         document.body.style.overflow = '';
     }
     if (btn) btn.addEventListener('click', openSidebar);
     if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
     if (overlay) overlay.addEventListener('click', closeSidebar);
+    // Close sidebar when a nav link is tapped
+    document.querySelectorAll('.sidebar-nav a, .sidebar-nav button').forEach(function(el) {
+        el.addEventListener('click', function() {
+            if (window.innerWidth <= 1024) closeSidebar();
+        });
+    });
+    // Auto-close on resize to desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 1024) closeSidebar();
+    });
 }
 
 function setupQAToggles() {

@@ -22,7 +22,7 @@ const STATIC_DEFAULTS = {
     default_per_page: 9,
     default_product_filter: 'All Products',
     default_name_color: '#ffffff',
-    default_nameplate: 'spirit_blossom_petrals.webm',
+    default_nameplate: 'spirit_blossom_petrals.webp',
     default_avatar_decoration: 'chromawave.png',
     macos_launcher_file_path: null,
     linux_launcher_file_path: null,
@@ -45,12 +45,10 @@ function loadStaticConfig() {
 
 const DOWNLOADS_DIR = path.resolve(__dirname, '..', '..', 'data', 'downloads');
 const LAUNCHER_FILES = {
-    // Served by the download endpoint. Use the .zip so users get ONE file
-    // that contains the entire portable folder (which is needed because
-    // the inner .exe requires resources/, locales/, and .dll files
-    // alongside it). Users unzip once, then double-click
-    // UCHIHA-Launcher.exe inside the folder for instant launch.
-    windows: { name: 'UCHIHA-Launcher-portable.zip', display: 'UCHIHA-Launcher-portable.zip' },
+    // Served by the download endpoint. We ship the NSIS setup .exe which
+    // installs the launcher into %LOCALAPPDATA%\Programs\uchiha-launcher\
+    // and creates a desktop + start-menu shortcut on double-click.
+    windows: { name: 'UCHIHA-Launcher-Setup.exe', display: 'UCHIHA-Launcher-Setup.exe' },
     macos:   { name: 'UCHIHA-Launcher-macOS.zip',   display: 'UCHIHA-Launcher' },
     linux:   { name: 'UCHIHA-Launcher-linux.zip',   display: 'UCHIHA-Launcher' },
 };
