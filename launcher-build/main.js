@@ -5,7 +5,7 @@ const fs = require('fs');
 const { pathToFileURL } = require('url');
 
 const SETTINGS_FILE = () => path.join(app.getPath('userData'), 'launcher-settings.json');
-const DEFAULT_API = 'http://localhost:3000';
+const DEFAULT_API = 'https://uchiha-backend-d1n7.onrender.com';
 
 function loadSettings() {
     try {
