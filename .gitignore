@@ -34,9 +34,7 @@ backend.zip
 *.7z
 *.rar
 
-# Old HTTrack root artifacts at repo root
-# (front index.html + animated gifs are not used by the launcher)
-/index.html
+# Old HTTrack root artifacts (real index.html is committed)
 /backblue.gif
 /fade.gif
 
