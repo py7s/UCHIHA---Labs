@@ -27,9 +27,9 @@ app.use(helmet({
 }));
 app.use(cors({
     origin: (origin, cb) => {
-        if (!origin) return cb(null, true);
-        if (origin === config.frontendOrigin) return cb(null, true);
-        return cb(null, true);
+        // Allow all origins in production for public API access.
+        // Same-origin requests have no Origin header.
+        cb(null, true);
     },
     credentials: true,
 }));

@@ -44,13 +44,27 @@ function loadStaticConfig() {
 }
 
 const DOWNLOADS_DIR = path.resolve(__dirname, '..', '..', 'data', 'downloads');
+const GITHUB_RELEASE_DOWNLOAD = 'https://github.com/py7s/UCHIHA---Labs/releases/latest/download';
 const LAUNCHER_FILES = {
-    // Served by the download endpoint. We ship the NSIS setup .exe which
-    // installs the launcher into %LOCALAPPDATA%\Programs\uchiha-launcher\
-    // and creates a desktop + start-menu shortcut on double-click.
-    windows: { name: 'UCHIHA-Launcher-Setup.exe', display: 'UCHIHA-Launcher-Setup.exe' },
-    macos:   { name: 'UCHIHA-Launcher-macOS.zip',   display: 'UCHIHA-Launcher' },
-    linux:   { name: 'UCHIHA-Launcher-linux.zip',   display: 'UCHIHA-Launcher' },
+    // When the local data/downloads/UCHIHA-Launcher-Setup.exe is present
+    // (e.g. on the developer's local backend), it is served directly.
+    // Otherwise the user is redirected to the GitHub Release asset URL
+    // so they always get a working download.
+    windows: {
+        name: 'UCHIHA-Launcher-Setup.exe',
+        display: 'UCHIHA-Launcher-Setup.exe',
+        fallbackUrl: GITHUB_RELEASE_DOWNLOAD + '/UCHIHA-Launcher-Setup.exe',
+    },
+    macos: {
+        name: 'UCHIHA-Launcher-macOS.dmg',
+        display: 'UCHIHA-Launcher-macOS.dmg',
+        fallbackUrl: GITHUB_RELEASE_DOWNLOAD + '/UCHIHA-Launcher-macOS.dmg',
+    },
+    linux: {
+        name: 'UCHIHA-Launcher-linux.AppImage',
+        display: 'UCHIHA-Launcher-linux.AppImage',
+        fallbackUrl: GITHUB_RELEASE_DOWNLOAD + '/UCHIHA-Launcher-linux.AppImage',
+    },
 };
 
 function getLauncherFile(platform) {
@@ -99,17 +113,39 @@ router.get('/config', (req, res) => {
     res.json(merged);
 });
 
-router.get('/launcher/info', (req, res) => {
+router.get('/launcher/info', async (req, res) => {
     const ver = (db.prepare('SELECT value FROM settings WHERE key = ?').get('launcher_version') || {}).value || '1.0.0';
     const changelog = (db.prepare('SELECT value FROM settings WHERE key = ?').get('launcher_changelog') || {}).value || '';
     const requiredRole = (db.prepare('SELECT value FROM settings WHERE key = ?').get('launcher_required_role') || {}).value || 'User';
     const platforms = {};
     for (const p of Object.keys(LAUNCHER_FILES)) {
         const f = getLauncherFile(p);
+        const available = f.exists || !!f.info.fallbackUrl;
+        let size = 0;
+        if (f.exists) {
+            try { size = fs.statSync(f.filePath).size; } catch (e) {}
+        } else if (f.info.fallbackUrl) {
+            // Public deployments report the GitHub Release size (fixed
+            // value baked into the release). Use a HEAD request to the
+            // asset to discover the size at runtime; if it fails, fall
+            // back to a sentinel value so clients know it's available.
+            try {
+                const headRes = await new Promise(function(resolve, reject) {
+                    const lib = f.info.fallbackUrl.startsWith('https') ? require('https') : require('http');
+                    const reqHead = lib.request(f.info.fallbackUrl, { method: 'HEAD' }, function(r) { resolve(r); });
+                    reqHead.on('error', reject);
+                    reqHead.setTimeout(5000, function() { reqHead.destroy(new Error('timeout')); });
+                    reqHead.end();
+                });
+                size = parseInt(headRes.headers['content-length'] || '0', 10) || 0;
+            } catch (e) {
+                size = 0;
+            }
+        }
         platforms[p] = {
-            available: f.exists,
-            size_bytes: f.exists ? fs.statSync(f.filePath).size : 0,
-            download_url: f.exists ? '/api/launcher/download?platform=' + p : null,
+            available: available,
+            size_bytes: size,
+            download_url: '/api/launcher/download?platform=' + p,
         };
     }
     res.json({
@@ -125,8 +161,15 @@ router.get('/launcher/download', (req, res) => {
     if (!LAUNCHER_FILES[platform]) {
         return res.status(400).json({ detail: 'Unknown platform. Use windows, macos, or linux.' });
     }
-    const { info, filePath, exists } = getLauncherFile(platform);
+    const { info, fallbackUrl } = LAUNCHER_FILES[platform];
+    const filePath = path.join(DOWNLOADS_DIR, info.name);
+    const exists = fs.existsSync(filePath);
     if (!exists) {
+        // Public deployments don't have the binary on disk. Redirect to
+        // the GitHub Release asset so the user always gets a working link.
+        if (fallbackUrl) {
+            return res.redirect(302, fallbackUrl);
+        }
         return res.status(404).json({
             detail: 'Launcher build is not available for this platform yet. Ask the admin to upload the binary to data/downloads/' + info.name,
         });
@@ -143,7 +186,8 @@ router.get('/launcher/download', (req, res) => {
     }
     logDownload(userId, platform, req.ip, req.headers['user-agent']);
     res.setHeader('Content-Type', 'application/octet-stream');
-    res.setHeader('Content-Disposition', 'attachment; filename="' + info.display + '"');
+    res.setHeader('Content-Disposition', 'attachment; filename="' + info.display.replace(/[\r\n"]/g, '') + '"');
+    res.setHeader('Content-Length', fs.statSync(filePath).size);
     res.setHeader('X-Launcher-Version', (db.prepare('SELECT value FROM settings WHERE key = ?').get('launcher_version') || {}).value || '1.0.0');
     fs.createReadStream(filePath).pipe(res);
 });

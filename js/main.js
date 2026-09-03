@@ -1,43 +1,30 @@
-const API_BASE_RAW = 'http://localhost:3000';
-const CF_WORKER = 'http://localhost:3000';
+// Public backend (Render.com). When the user is on the public HTTPS
+// site at uchiha-market.com, the backend they talk to is the one
+// hosted on Render. In Electron, or in plain-HTTP dev context, we
+// fall back to the local backend on localhost:3000.
+const API_BASE_RAW = (function() {
+    if (typeof window === 'undefined') return 'http://localhost:3000';
+    var isElectron = !!(window.uchihaLauncher && window.uchihaLauncher.isDesktop);
+    var isHttps = window.location.protocol === 'https:';
+    if (isElectron) return 'http://localhost:3000';
+    if (isHttps) return 'https://uchiha-backend-d1n7.onrender.com';
+    return 'http://localhost:3000';
+})();
+const CF_WORKER = API_BASE_RAW;
 const isElectron = !!(window.uchihaLauncher && window.uchihaLauncher.isDesktop);
 const isHttps = window.location.protocol === 'https:';
 const isPublicHttps = isHttps && !isElectron;
 function apiUrl(path) {
-    // In Electron desktop app, always use plain HTTP localhost backend.
-    if (isElectron) return API_BASE_RAW + path;
-    // If the site is served over HTTPS, mixed content rules block plain
-    // HTTP requests to localhost. The frontend then makes relative-URL
-    // requests that GitHub Pages answers with 404 (no backend there).
-    // Callers should treat 404 on /api/* as "backend offline" and show
-    // a friendly message instead of crashing.
-    if (isHttps && API_BASE_RAW.startsWith('http://')) {
-        return path;
-    }
     return API_BASE_RAW + path;
 }
 
-// On the public HTTPS site the backend is on http://localhost:3000 which
-// the browser will refuse (mixed content). We don't intercept the
-// request — we just silently catch the resulting network error so it
-// doesn't spam the console. The real backend is reachable from the
-// Electron desktop app or from a plain-HTTP dev context.
+// Backend is now publicly hosted on Render. The fetch wrapper is a
+// no-op kept for future-proofing (e.g. if the backend goes down we
+// can re-enable silent 503s for offline UX).
 (function() {
     if (typeof window === 'undefined' || !window.fetch) return;
     var origFetch = window.fetch.bind(window);
-    window.fetch = function(input, init) {
-        // Suppress console errors for /api/* when on the public HTTPS site
-        // (these will fail at the network layer due to mixed-content rules).
-        if (isPublicHttps) {
-            return origFetch(input, init).catch(function() {
-                return new Response(
-                    JSON.stringify({ detail: 'Backend offline. Use the desktop app for full functionality.' }),
-                    { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'application/json' } }
-                );
-            });
-        }
-        return origFetch(input, init);
-    };
+    window.fetch = function(input, init) { return origFetch(input, init); };
 })();
 
 function profilePicUrl(profilePicturePath) {

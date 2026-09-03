@@ -223,14 +223,9 @@
             if (params.get('tab') === 'register') {
                 setTimeout(syncAuthForms, 0);
             }
-            // Show public-site notice when on HTTPS (no reachable backend)
-            var isHttps = window.location.protocol === 'https:';
-            var notice = document.getElementById('authPublicNotice');
-            if (notice && isHttps) {
-                notice.style.display = 'flex';
-                var closeBtn = notice.querySelector('.auth-public-notice-close');
-                if (closeBtn) closeBtn.onclick = function() { notice.style.display = 'none'; };
-            }
+            // Public-site notice: backend is now hosted publicly on Render,
+            // so login works on the website too. Notice is hidden by default.
+            // (Kept in the DOM so it can be shown if the backend is offline.)
         });
     })();
     </script>
