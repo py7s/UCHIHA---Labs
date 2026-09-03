@@ -18,11 +18,27 @@ backend/data/uchiha.db-wal
 backend/data/uchiha.db-shm
 backend/data/uploads/
 backend/data/downloads/
-!backend/data/downloads/.gitkeep
 backend/data/config.json
 backend/data/config.local.json
 backend/.env
 backend/.env.local
+
+# Root-level data (HTTrack/backup artifacts, do not commit)
+data/
+data/uchiha.db
+data/uchiha.db-journal
+data/uploads/
+data/downloads/
+backend.zip
+*.zip
+*.7z
+*.rar
+
+# Old HTTrack root artifacts at repo root
+# (front index.html + animated gifs are not used by the launcher)
+/index.html
+/backblue.gif
+/fade.gif
 
 # Logs
 *.log
