@@ -25,8 +25,17 @@
 
             <div class="auth-tabs">
                 <div id="authTabIndicator"></div>
-                <button type="button" class="auth-tab active" data-tab="login">Login</button>
-                <button type="button" class="auth-tab" data-tab="register">Register</button>
+            <button type="button" class="auth-tab active" data-tab="login">Login</button>
+            <button type="button" class="auth-tab" data-tab="register">Register</button>
+            </div>
+
+            <div id="authPublicNotice" class="auth-public-notice" style="display:none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <div>
+                    <strong>Backend runs locally.</strong>
+                    <span>To log in or create an account, please use the <a href="../index.html">UCHIHA Launcher desktop app</a> (click "Download Launcher" in the sidebar). The public website is read-only.</span>
+                </div>
+                <button type="button" class="auth-public-notice-close" aria-label="Dismiss">&times;</button>
             </div>
 
             <form id="loginForm" autocomplete="on">
@@ -213,6 +222,14 @@
             var params = new URLSearchParams(window.location.search);
             if (params.get('tab') === 'register') {
                 setTimeout(syncAuthForms, 0);
+            }
+            // Show public-site notice when on HTTPS (no reachable backend)
+            var isHttps = window.location.protocol === 'https:';
+            var notice = document.getElementById('authPublicNotice');
+            if (notice && isHttps) {
+                notice.style.display = 'flex';
+                var closeBtn = notice.querySelector('.auth-public-notice-close');
+                if (closeBtn) closeBtn.onclick = function() { notice.style.display = 'none'; };
             }
         });
     })();

@@ -17,22 +17,24 @@ function apiUrl(path) {
     return API_BASE_RAW + path;
 }
 
-// Wrap fetch to silently swallow 404s on /api/* when running on the
-// public HTTPS site (no backend available). The real backend on the
-// user's local machine is only reachable from the Electron app or
-// from a plain-HTTP dev context.
+// On the public HTTPS site the backend is on http://localhost:3000 which
+// the browser will refuse (mixed content). We don't intercept the
+// request — we just silently catch the resulting network error so it
+// doesn't spam the console. The real backend is reachable from the
+// Electron desktop app or from a plain-HTTP dev context.
 (function() {
     if (typeof window === 'undefined' || !window.fetch) return;
     var origFetch = window.fetch.bind(window);
     window.fetch = function(input, init) {
-        var url = (typeof input === 'string') ? input : (input && input.url) || '';
-        if (isPublicHttps && url.indexOf('/api/') >= 0) {
-            // Public site, no backend. Return a fake 503 so callers that
-            // .ok-check the response skip silently instead of throwing.
-            return Promise.resolve(new Response(
-                JSON.stringify({ detail: 'Backend offline. Launch the desktop app for full functionality.' }),
-                { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'application/json' } }
-            ));
+        // Suppress console errors for /api/* when on the public HTTPS site
+        // (these will fail at the network layer due to mixed-content rules).
+        if (isPublicHttps) {
+            return origFetch(input, init).catch(function() {
+                return new Response(
+                    JSON.stringify({ detail: 'Backend offline. Use the desktop app for full functionality.' }),
+                    { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'application/json' } }
+                );
+            });
         }
         return origFetch(input, init);
     };
@@ -3255,12 +3257,22 @@ function setupLoginRegisterButtons() {
     var loginBtn = document.getElementById('loginBtn');
     var registerBtn = document.getElementById('registerBtn');
     if (loginBtn) {
-        loginBtn.addEventListener('click', function() {
+        loginBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (isPublicHttps) {
+                showBanner('Login requires the UCHIHA Launcher desktop app (the backend runs locally). Click "Download Launcher" below to install it.', 'info');
+                return;
+            }
             window.location.href = './sites/login_register.html?tab=login';
         });
     }
     if (registerBtn) {
-        registerBtn.addEventListener('click', function() {
+        registerBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (isPublicHttps) {
+                showBanner('Account creation requires the UCHIHA Launcher desktop app. Click "Download Launcher" below to install it.', 'info');
+                return;
+            }
             window.location.href = './sites/login_register.html?tab=register';
         });
     }

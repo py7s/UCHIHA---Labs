@@ -480,3 +480,54 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ---------- Auth public-site notice ---------- */
+.auth-public-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(214, 0, 0, 0.12) 0%, rgba(140, 0, 0, 0.06) 100%);
+    border: 1px solid rgba(214, 0, 0, 0.35);
+    border-left: 3px solid #d60000;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    color: #ffb1b1;
+    font-size: 13px;
+    line-height: 1.5;
+    position: relative;
+}
+.auth-public-notice svg {
+    color: #d60000;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.auth-public-notice strong {
+    color: #fff;
+    display: block;
+    margin-bottom: 2px;
+}
+.auth-public-notice a {
+    color: #ff4d4d;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.auth-public-notice a:hover {
+    color: #ff8080;
+}
+.auth-public-notice-close {
+    background: transparent;
+    border: none;
+    color: #ff8080;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+.auth-public-notice-close:hover {
+    background: rgba(214, 0, 0, 0.15);
+}
