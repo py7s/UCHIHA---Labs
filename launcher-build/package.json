@@ -64,6 +64,8 @@
                            "createDesktopShortcut":  true,
                            "createStartMenuShortcut":  true,
                            "shortcutName":  "UCHIHA Launcher",
+                           "installerHeader":  "build/installer-header.bmp",
+                           "installerSidebar":  "build/installer-sidebar.bmp",
                            "deleteAppDataOnUninstall":  true
                        }
               },
