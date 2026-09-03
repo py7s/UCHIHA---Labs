@@ -145,39 +145,42 @@ router.get('/launcher/info', async (req, res) => {
 });
 
 router.get('/launcher/download', (req, res) => {
-    const platform = String(req.query.platform || 'windows').toLowerCase();
-    if (!LAUNCHER_FILES[platform]) {
-        return res.status(400).json({ detail: 'Unknown platform. Use windows, macos, or linux.' });
-    }
-    const { info, fallbackUrl } = LAUNCHER_FILES[platform];
-    const filePath = path.join(DOWNLOADS_DIR, info.name);
-    const exists = fs.existsSync(filePath);
-    if (!exists) {
-        // Public deployments don't have the binary on disk. Redirect to
-        // the GitHub Release asset so the user always gets a working link.
-        if (fallbackUrl) {
-            return res.redirect(302, fallbackUrl);
+    try {
+        const platform = String(req.query.platform || 'windows').toLowerCase();
+        if (!LAUNCHER_FILES[platform]) {
+            return res.status(400).json({ detail: 'Unknown platform. Use windows, macos, or linux.' });
         }
-        return res.status(404).json({
-            detail: 'Launcher build is not available for this platform yet. Ask the admin to upload the binary to data/downloads/' + info.name,
-        });
+        const { info, fallbackUrl } = LAUNCHER_FILES[platform];
+        const filePath = path.join(DOWNLOADS_DIR, info.name);
+        const exists = fs.existsSync(filePath);
+        if (!exists) {
+            if (fallbackUrl) {
+                return res.redirect(302, fallbackUrl);
+            }
+            return res.status(404).json({
+                detail: 'Launcher build is not available for this platform yet. Ask the admin to upload the binary to data/downloads/' + info.name,
+            });
+        }
+        const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || req.query.token;
+        let userId = null;
+        if (token) {
+            try {
+                const jwt = require('jsonwebtoken');
+                const config = require('../config');
+                const decoded = jwt.verify(token, config.jwtSecret);
+                userId = decoded.sub;
+            } catch (e) {}
+        }
+        try { logDownload(userId, platform, req.ip, req.headers['user-agent']); } catch (e) {}
+        res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader('Content-Disposition', 'attachment; filename="' + info.display.replace(/[\r\n"]/g, '') + '"');
+        res.setHeader('Content-Length', fs.statSync(filePath).size);
+        res.setHeader('X-Launcher-Version', (db.prepare('SELECT value FROM settings WHERE key = ?').get('launcher_version') || {}).value || '1.0.0');
+        fs.createReadStream(filePath).pipe(res);
+    } catch (err) {
+        console.error('[launcher/download] error:', err && (err.stack || err.message || err));
+        res.status(500).json({ detail: 'Internal server error' });
     }
-    const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || req.query.token;
-    let userId = null;
-    if (token) {
-        try {
-            const jwt = require('jsonwebtoken');
-            const config = require('../config');
-            const decoded = jwt.verify(token, config.jwtSecret);
-            userId = decoded.sub;
-        } catch (e) {}
-    }
-    try { logDownload(userId, platform, req.ip, req.headers['user-agent']); } catch (e) {}
-    res.setHeader('Content-Type', 'application/octet-stream');
-    res.setHeader('Content-Disposition', 'attachment; filename="' + info.display.replace(/[\r\n"]/g, '') + '"');
-    res.setHeader('Content-Length', fs.statSync(filePath).size);
-    res.setHeader('X-Launcher-Version', (db.prepare('SELECT value FROM settings WHERE key = ?').get('launcher_version') || {}).value || '1.0.0');
-    fs.createReadStream(filePath).pipe(res);
 });
 
 router.get('/news', (req, res) => {
