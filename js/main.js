@@ -3246,20 +3246,12 @@ function setupLoginRegisterButtons() {
     if (loginBtn) {
         loginBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            if (isPublicHttps) {
-                showBanner('Login requires the UCHIHA Launcher desktop app (the backend runs locally). Click "Download Launcher" below to install it.', 'info');
-                return;
-            }
             window.location.href = './sites/login_register.html?tab=login';
         });
     }
     if (registerBtn) {
         registerBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            if (isPublicHttps) {
-                showBanner('Account creation requires the UCHIHA Launcher desktop app. Click "Download Launcher" below to install it.', 'info');
-                return;
-            }
             window.location.href = './sites/login_register.html?tab=register';
         });
     }
