@@ -10,7 +10,13 @@ const DEFAULT_API = 'https://uchiha-backend-d1n7.onrender.com';
 function loadSettings() {
     try {
         if (fs.existsSync(SETTINGS_FILE())) {
-            return JSON.parse(fs.readFileSync(SETTINGS_FILE(), 'utf8'));
+            const raw = JSON.parse(fs.readFileSync(SETTINGS_FILE(), 'utf8'));
+            // Migrate stale defaults from the old localhost-only build
+            // so existing users do not get a "backend offline" error.
+            if (raw.apiBase === 'http://localhost:3000') {
+                raw.apiBase = DEFAULT_API;
+            }
+            return raw;
         }
     } catch (e) {}
     return { apiBase: DEFAULT_API, token: null, user: null };
@@ -119,6 +125,18 @@ function createWindow() {
 
     mainWindow.loadURL(startUrl);
 
+    // Push the resolved apiBase into the renderer as soon as the
+    // page is ready so js/main.js can read it via currentApiBase()
+    // before its first network request. Also fires immediately for
+    // ipc-driven re-resolution.
+    const pushApiBase = () => {
+        const base = String(settings.apiBase || DEFAULT_API).replace(/\/+$/, '');
+        const script = `window.__UCHIHA_API_BASE__ = ${JSON.stringify(base)};`;
+        mainWindow.webContents.executeJavaScript(script).catch(() => {});
+    };
+    mainWindow.webContents.once('did-finish-load', pushApiBase);
+    mainWindow.webContents.on('did-frame-finish-load', pushApiBase);
+
     mainWindow.on('closed', () => { mainWindow = null; });
 }
 
@@ -133,6 +151,10 @@ ipcMain.handle('launcher:getInfo', () => ({
 ipcMain.handle('launcher:setApiBase', (_e, apiBase) => {
     settings.apiBase = String(apiBase || DEFAULT_API).replace(/\/+$/, '') || DEFAULT_API;
     saveSettings(settings);
+    if (mainWindow) {
+        const script = `window.__UCHIHA_API_BASE__ = ${JSON.stringify(settings.apiBase)};`;
+        mainWindow.webContents.executeJavaScript(script).catch(() => {});
+    }
     return { ok: true, apiBase: settings.apiBase };
 });
 

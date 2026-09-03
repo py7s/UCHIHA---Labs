@@ -1,21 +1,45 @@
 // Public backend (Render.com). When the user is on the public HTTPS
 // site at uchiha-market.com, the backend they talk to is the one
-// hosted on Render. In Electron, or in plain-HTTP dev context, we
-// fall back to the local backend on localhost:3000.
+// hosted on Render. In Electron, the API base is supplied by the
+// launcher (see preload.js -> uchihaLauncher.getInfo().apiBase) so
+// the user can change it in settings; until that promise resolves
+// we fall back to the Render URL. In a plain-HTTP dev context, we
+// fall back to localhost.
+const DEFAULT_API_BASE = 'https://uchiha-backend-d1n7.onrender.com';
 const API_BASE_RAW = (function() {
     if (typeof window === 'undefined') return 'http://localhost:3000';
     var isElectron = !!(window.uchihaLauncher && window.uchihaLauncher.isDesktop);
     var isHttps = window.location.protocol === 'https:';
-    if (isElectron) return 'http://localhost:3000';
-    if (isHttps) return 'https://uchiha-backend-d1n7.onrender.com';
+    if (isElectron && window.uchihaLauncher && typeof window.uchihaLauncher.getInfo === 'function') {
+        // Resolve the actual base from the launcher as soon as the
+        // page loads; this keeps the rest of the code synchronous.
+        try {
+            window.uchihaLauncher.getInfo().then(function(info) {
+                if (info && info.apiBase) {
+                    window.__UCHIHA_API_BASE__ = String(info.apiBase).replace(/\/+$/, '');
+                }
+            }).catch(function() {});
+        } catch (e) {}
+        // Provisional base until the IPC resolves; in the meantime
+        // default to the public backend so the user can still log
+        // in and see products even before the IPC replies.
+        return DEFAULT_API_BASE;
+    }
+    if (isHttps) return DEFAULT_API_BASE;
     return 'http://localhost:3000';
 })();
+// Returns the *current* best-known API base, prefering the value
+// the Electron main process gave us via getInfo().
+function currentApiBase() {
+    if (typeof window !== 'undefined' && window.__UCHIHA_API_BASE__) return window.__UCHIHA_API_BASE__;
+    return API_BASE_RAW;
+}
 const CF_WORKER = API_BASE_RAW;
 const isElectron = !!(window.uchihaLauncher && window.uchihaLauncher.isDesktop);
 const isHttps = window.location.protocol === 'https:';
 const isPublicHttps = isHttps && !isElectron;
 function apiUrl(path) {
-    return API_BASE_RAW + path;
+    return currentApiBase() + path;
 }
 
 // Backend is now publicly hosted on Render. The fetch wrapper is a
