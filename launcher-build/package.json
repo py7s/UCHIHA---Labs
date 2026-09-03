@@ -32,10 +32,14 @@
                             ],
                   "extraResources":  [
                                          {
-                                             "from":  "../UCHIHA - Launcher/Launcher",
+                                             "from":  "..",
                                              "to":  "site",
                                              "filter":  [
-                                                            "**/*"
+                                                            "index.html",
+                                                            "css/**",
+                                                            "js/**",
+                                                            "images/**",
+                                                            "sites/**"
                                                         ]
                                          }
                                      ],
@@ -52,14 +56,16 @@
                               "artifactName":  "UCHIHA-Launcher-Setup.exe"
                           },
                   "asar":  false,
-                  "nsis":  {
-                               "oneClick":  true,
-                               "perMachine":  false,
-                               "allowToChangeInstallationDirectory":  false,
-                               "createDesktopShortcut":  true,
-                               "createStartMenuShortcut":  true,
-                               "shortcutName":  "UCHIHA Launcher"
-                           }
+              "nsis":  {
+                           "oneClick":  false,
+                           "perMachine":  false,
+                           "allowToChangeInstallationDirectory":  true,
+                           "allowElevation":  true,
+                           "createDesktopShortcut":  true,
+                           "createStartMenuShortcut":  true,
+                           "shortcutName":  "UCHIHA Launcher",
+                           "deleteAppDataOnUninstall":  true
+                       }
               },
     "dependencies":  {
                          "adm-zip":  "^0.6.0",

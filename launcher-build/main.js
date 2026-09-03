@@ -30,8 +30,12 @@ let mainWindow = null;
 
 function resolveIndexHtml() {
     const candidates = [
-        path.resolve(__dirname, '..', '..', 'UCHIHA - Launcher', 'Launcher', 'index.html'),
+        // Dev: sibling project root (one level up from launcher-build, in repo root)
+        path.resolve(__dirname, '..', 'index.html'),
+        // Production: extraResources copies Launcher/ folder to resources/site/
         path.join(process.resourcesPath || '', 'site', 'index.html'),
+        // Production fallback: some packagers copy into resources/app
+        path.join(process.resourcesPath || '', 'app', 'site', 'index.html'),
     ];
     for (const p of candidates) {
         if (p && fs.existsSync(p)) return p;
