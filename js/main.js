@@ -986,18 +986,19 @@ async function loadConfig() {
 function checkGlobalMaintenance() {
     var existing = document.getElementById('global-maintenance-overlay');
     if (existing) existing.remove();
-    if (config.maintenance_mode === 'on') {
-        var overlay = document.createElement('div');
-        overlay.id = 'global-maintenance-overlay';
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#1a0505,#0a0000);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;font-family:Segoe UI,system-ui,sans-serif;';
-        var reason = config.maintenance_reason || 'We are currently performing maintenance. Please check back soon.';
-        overlay.innerHTML = '<div style="text-align:center;max-width:520px;padding:24px;">' +
-            '<div style="font-size:56px;margin-bottom:20px;filter:drop-shadow(0 0 24px rgba(255,90,90,0.5));">🔧</div>' +
-            '<h1 style="margin:0 0 16px 0;font-size:32px;font-weight:700;letter-spacing:-0.02em;">Under Maintenance</h1>' +
-            '<p style="color:#bbb;line-height:1.7;font-size:15px;">' + reason.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>' +
-            '</div>';
-        document.body.appendChild(overlay);
-    }
+    if (config.maintenance_mode !== 'on') return;
+    var rank = getCurrentPermissionRank();
+    if (rank >= 5) return;
+    var overlay = document.createElement('div');
+    overlay.id = 'global-maintenance-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#1a0505,#0a0000);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;font-family:Segoe UI,system-ui,sans-serif;';
+    var reason = config.maintenance_reason || 'We are currently performing maintenance. Please check back soon.';
+    overlay.innerHTML = '<div style="text-align:center;max-width:520px;padding:24px;">' +
+        '<div style="font-size:56px;margin-bottom:20px;filter:drop-shadow(0 0 24px rgba(255,90,90,0.5));">🔧</div>' +
+        '<h1 style="margin:0 0 16px 0;font-size:32px;font-weight:700;letter-spacing:-0.02em;">Under Maintenance</h1>' +
+        '<p style="color:#bbb;line-height:1.7;font-size:15px;">' + reason.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</p>' +
+        '</div>';
+    document.body.appendChild(overlay);
 }
 
 var PERMISSION_RANKS = { 'user': 0, 'vip': 1, 'partner': 2, 'beta': 3, 'unlockall': 4, 'admin': 5, 'owner': 6 };
