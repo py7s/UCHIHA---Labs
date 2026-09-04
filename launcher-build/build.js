@@ -22,7 +22,8 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = __dirname;
-const SITE = path.resolve(ROOT, '..', 'UCHIHA - Launcher', 'Launcher');
+// The website lives in the repository root (sibling of launcher-build/).
+const SITE = path.resolve(ROOT, '..');
 const PKG  = path.join(ROOT, 'package.json');
 const ICON = path.join(ROOT, 'icon.ico');
 const ELECTRON_VER = '33.4.11';
@@ -36,6 +37,22 @@ function rmrf(p) {
 function copyDir(src, dst) {
     fs.mkdirSync(dst, { recursive: true });
     for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+        const s = path.join(src, entry.name);
+        const d = path.join(dst, entry.name);
+        if (entry.isDirectory()) copyDir(s, d);
+        else fs.copyFileSync(s, d);
+    }
+}
+
+// Only the website files belong in resources/site/. Everything else
+// (backend/, launcher-build/, backend.zip, .git, node_modules) must
+// never end up inside the desktop app.
+const SITE_ALLOW = new Set(['index.html', 'partner.json', 'css', 'js', 'images', 'sites']);
+
+function copySite(src, dst) {
+    fs.mkdirSync(dst, { recursive: true });
+    for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+        if (!SITE_ALLOW.has(entry.name)) continue;
         const s = path.join(src, entry.name);
         const d = path.join(dst, entry.name);
         if (entry.isDirectory()) copyDir(s, d);
@@ -80,7 +97,7 @@ function copyFileSafe(src, dst) {
 
     console.log('[4/5] Copy website into resources/site/');
     const siteDst = path.join(APPDIR, 'resources', 'site');
-    copyDir(SITE, siteDst);
+    copySite(SITE, siteDst);
 
     // The inner Electron .exe is a real Windows PE binary.
     const innerExe = path.join(APPDIR, FINAL_NAME + '.exe');

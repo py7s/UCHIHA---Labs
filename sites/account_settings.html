@@ -7,6 +7,7 @@
     <title>UCHIHA - Labs© - Account Settings</title>
     <link rel="stylesheet" href="../css/account_settings.css">
     <link rel="stylesheet" href="../css/mobile.css">
+    <link rel="stylesheet" href="../css/uchiha-theme.css">
     <link rel="icon" type="image/png" href="../images/main/logo.webp">
 </head>
 <body>
@@ -67,9 +68,9 @@
                     <div class="profile-picture-container">
                         <img src="" alt="Profile" id="settingsProfileImage" class="settings-profile-img" onerror="this.onerror=null;this.style.opacity='0.3'">
                         <div class="profile-picture-actions">
-                            <input type="file" id="profileImageInput" accept="image/png" style="display: none;">
+                            <input type="file" id="profileImageInput" accept="image/*" style="display: none;">
                             <button class="btn-secondary" id="uploadImageBtn">Upload New Picture</button>
-                            <small>PNG format only, max 5MB</small>
+                            <small>PNG, JPG or WebP — max 5MB (auto-converts to PNG)</small>
                         </div>
                     </div>
                 </div>

@@ -1146,6 +1146,9 @@ function updateUserProfile(user) {
     var tok = sessionStorage.getItem('uchiha_token') || '';
     if (user.profile_picture_base64) {
         profileSrc = 'data:image/png;base64,' + user.profile_picture_base64;
+    } else if (user.profile_picture_url) {
+        // Canonical URL (e.g. raw.githubusercontent.com) — no API roundtrip needed.
+        profileSrc = user.profile_picture_url;
     } else if (user.profile_picture) {
         var pp = String(user.profile_picture);
         // Heuristic: a bare filename has no path separator and no protocol/data prefix
@@ -1157,6 +1160,9 @@ function updateUserProfile(user) {
         } else {
             profileSrc = pp;
         }
+    } else if (user.discord_avatar) {
+        // Show the Discord avatar as a fallback when no custom picture exists.
+        profileSrc = user.discord_avatar;
     } else if (user.username) {
         profileSrc = './images/' + user.username + '/' + user.username + '.png';
     }

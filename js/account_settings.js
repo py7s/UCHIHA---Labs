@@ -21,15 +21,21 @@ async function loadAccountSettings(user) {
     document.getElementById('devicesConnected').textContent = user.devices_connected || 1;
 
     const profileImg = document.getElementById('settingsProfileImage');
-    if (user.profile_picture_base64) {
-        profileImg.src = 'data:image/png;base64,' + user.profile_picture_base64;
-    } else if (user.profile_picture) {
-        const tok = sessionStorage.getItem('uchiha_token');
-        if (tok) profileImg.src = apiUrl('/api/profile_picture/' + encodeURIComponent(user.profile_picture)) + '?token=' + encodeURIComponent(tok);
-        else profileImg.src = apiUrl('/api/profile_picture/' + encodeURIComponent(user.profile_picture));
-    } else {
-        profileImg.src = '';
+    profileImg.src = resolveProfileImgSrc(user);
+}
+
+function resolveProfileImgSrc(user) {
+    if (user.profile_picture_base64) return 'data:image/png;base64,' + user.profile_picture_base64;
+    // Prefer the canonical (GitHub / Discord) URL when the backend returns one.
+    if (user.profile_picture_url) return user.profile_picture_url;
+    if (user.discord_avatar && !user.profile_picture) return user.discord_avatar;
+    if (user.profile_picture) {
+        const pp = String(user.profile_picture);
+        const isBare = pp.indexOf('/') === -1 && pp.indexOf('\\') === -1
+            && !pp.startsWith('data:') && !pp.startsWith('http:') && !pp.startsWith('https:');
+        return isBare ? apiUrl('/api/profile_picture/' + encodeURIComponent(pp)) : pp;
     }
+    return '';
 }
 
 let pendingProfilePictureBase64 = null;
@@ -45,18 +51,55 @@ function setupProfileUpload() {
     imageInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        if (!file.type.includes('image')) {
-            showBanner('Only image files are allowed.', 'error');
+        if (!file.type.startsWith('image/')) {
+            showBanner('Please choose an image file (PNG, JPG or WebP).', 'error');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showBanner('Image must be smaller than 5MB.', 'error');
             return;
         }
         const reader = new FileReader();
         reader.onload = (event) => {
-            document.getElementById('settingsProfileImage').src = event.target.result;
-            const base64Full = event.target.result;
-            const base64Data = base64Full.split(',')[1];
-            pendingProfilePictureBase64 = base64Data;
+            // Convert every image to a real PNG (resized, max 512px) so the
+            // backend always receives a valid PNG — regardless of the original
+            // format (JPG/WebP/HEIC) — and the payload stays small.
+            convertToPng(event.target.result, 512)
+                .then((pngDataUrl) => {
+                    document.getElementById('settingsProfileImage').src = pngDataUrl;
+                    pendingProfilePictureBase64 = pngDataUrl.split(',')[1];
+                })
+                .catch(() => showBanner('Could not process this image.', 'error'));
         };
         reader.readAsDataURL(file);
+    });
+}
+
+function convertToPng(dataUrl, maxSize) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            try {
+                let w = img.naturalWidth || img.width;
+                let h = img.naturalHeight || img.height;
+                const scale = Math.min(1, maxSize / Math.max(w, h));
+                w = Math.max(1, Math.round(w * scale));
+                h = Math.max(1, Math.round(h * scale));
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                // Flatten transparency onto a dark background (fits the theme).
+                ctx.fillStyle = '#0b0b10';
+                ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL('image/png'));
+            } catch (err) {
+                reject(err);
+            }
+        };
+        img.onerror = () => reject(new Error('Could not load image'));
+        img.src = dataUrl;
     });
 }
 

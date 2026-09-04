@@ -95,6 +95,11 @@ Use this to gate admin-only UI features (delete posts, ban users, see admin pane
 ---
 
 ## CORS / Hosting notes
-- `API_BASE_RAW = 'http://prem-eu4.bot-hosting.net:20940'` is the HTTP fallback.
-- `CF_WORKER = 'https://uchiha-labs-launcher.uchiha-labs-official.workers.dev'` is used when the page is served over HTTPS (see `apiUrl()` in `js/main.js:3-8`).
-- Both URLs must implement every endpoint above. Whichever one receives the request, it MUST return the same JSON shape.
+- Frontend is hosted on GitHub Pages at **https://uchiha-market.com**.
+- Backend is hosted on Render at **https://uchiha-backend-d1n7.onrender.com** (`API_BASE_RAW` / `CF_WORKER` in `js/main.js:1-9`).
+- CORS is open for all origins in production.
+
+## Profile pictures
+- `POST /api/profile/upload_picture` (multipart field `file`, auth required). Accepts `image/png`, `image/jpeg`, `image/webp`, max 5 MB.
+- `GET /api/profile_picture/:filename` serves the picture (local file → embedded DB copy → 302 to GitHub raw).
+- On Render, uploads are pushed to the `ASSETS_REPO` GitHub repository (Contents API) and mirrored in the DB, so they survive restarts. Set `GITHUB_TOKEN` + `ASSETS_REPO` in the Render dashboard for the GitHub backup.
