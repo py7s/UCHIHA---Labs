@@ -250,28 +250,20 @@
 
             <section class="admin-section" id="tab-maintenance" style="display:none;">
                 <div class="admin-panel">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                        <div>
-                            <h2 style="margin:0 0 4px 0;">Maintenance Categories</h2>
-                            <p style="margin:0;font-size:12px;color:var(--text-tertiary);">Toggle categories on or off. Disabled categories are shown to users with your reason text.</p>
-                        </div>
-                        <button class="admin-btn admin-btn-primary" id="newMcatBtn">+ New Category</button>
+                    <h2 style="margin:0 0 12px 0;">Global Maintenance Mode</h2>
+                    <p style="margin:0;font-size:12px;color:var(--text-tertiary);margin-bottom:16px;">When enabled, all visitors see a maintenance overlay. Use this for site-wide downtime.</p>
+                    <div class="admin-form-group">
+                        <label>Maintenance Mode</label>
+                        <select id="globalMaintenanceMode">
+                            <option value="off">Off</option>
+                            <option value="on">On</option>
+                        </select>
                     </div>
-                    <div class="admin-table-wrap">
-                        <table class="admin-table" id="maintenanceCategoriesTable">
-                            <thead>
-                                <tr>
-                                    <th style="width:120px;">Slug</th>
-                                    <th>Title / Description</th>
-                                    <th style="width:120px;">Status</th>
-                                    <th>Reason</th>
-                                    <th style="width:60px;">Order</th>
-                                    <th style="width:240px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                    <div class="admin-form-group">
+                        <label>Maintenance Reason (shown to visitors)</label>
+                        <textarea id="globalMaintenanceReason" rows="3" placeholder="e.g. Upgrading servers. Back in ~2 hours."></textarea>
                     </div>
+                    <button class="admin-btn admin-btn-primary" id="saveGlobalMaintenanceBtn">Save Maintenance Settings</button>
                 </div>
             </section>
 

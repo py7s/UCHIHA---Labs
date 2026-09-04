@@ -271,6 +271,7 @@
                 ['discord_invite', 'Discord Invite URL', 'text'],
                 ['github_username', 'GitHub Username', 'text'],
                 ['maintenance_mode', 'Maintenance Mode (on/off)', 'text'],
+                ['maintenance_reason', 'Maintenance Reason (shown to visitors)', 'text'],
                 ['registration_enabled', 'Registration Enabled (true/false)', 'text'],
                 ['default_lc_new_user', 'Default LC for New Users', 'number'],
                 ['store_tab', 'Store Tab', 'text'],
@@ -382,85 +383,24 @@
         } catch (e) { banner('Failed to load partners: ' + e.message, 'error'); }
     }
 
-    async function loadMaintenanceCategoriesAdmin() {
+    async function loadGlobalMaintenanceAdmin() {
         try {
-            const data = await adminFetch('/maintenance_categories');
-            const tb = document.querySelector('#maintenanceCategoriesTable tbody');
-            if (!tb) return;
-            const cats = (data && data.categories) || [];
-            if (!cats.length) {
-                tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);">No categories yet.</td></tr>';
-                return;
-            }
-            tb.innerHTML = cats.map(c => {
-                const status = c.enabled
-                    ? '<span class="mcat-status on">ENABLED</span>'
-                    : '<span class="mcat-status off">DISABLED</span>';
-                return (
-                    '<tr data-id="' + c.id + '">' +
-                    '<td><code>' + esc(c.slug) + '</code></td>' +
-                    '<td><strong>' + esc(c.title) + '</strong>' + (c.description ? '<div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">' + esc(c.description) + '</div>' : '') + '</td>' +
-                    '<td>' + status + '</td>' +
-                    '<td style="max-width:260px;font-size:12px;color:var(--text-secondary);">' + (c.reason ? esc(c.reason) : '<span style="color:var(--text-tertiary);">—</span>') + '</td>' +
-                    '<td style="text-align:center;">' + (c.sort_order || 0) + '</td>' +
-                    '<td class="row-actions">' +
-                        '<button class="admin-btn admin-btn-small" data-act="editmcat" data-id="' + c.id + '">Edit</button>' +
-                        '<button class="admin-btn admin-btn-small" data-act="togglemcat" data-id="' + c.id + '" data-enabled="' + (c.enabled ? 1 : 0) + '">' + (c.enabled ? 'Disable' : 'Enable') + '</button>' +
-                        '<button class="admin-btn admin-btn-small admin-btn-danger" data-act="delmcat" data-id="' + c.id + '">Delete</button>' +
-                    '</td>' +
-                    '</tr>'
-                );
-            }).join('');
-        } catch (e) { banner('Failed to load maintenance categories: ' + e.message, 'error'); }
+            const data = await adminFetch('/settings');
+            const modeEl = document.getElementById('globalMaintenanceMode');
+            const reasonEl = document.getElementById('globalMaintenanceReason');
+            if (modeEl) modeEl.value = data.maintenance_mode === 'on' ? 'on' : 'off';
+            if (reasonEl) reasonEl.value = data.maintenance_reason || '';
+        } catch (e) { banner('Failed to load maintenance settings: ' + e.message, 'error'); }
     }
 
-    function openMcatModal(cat) {
-        const isEdit = !!cat;
-        openModal(
-            '<h3>' + (isEdit ? 'Edit Maintenance Category' : 'New Maintenance Category') + '</h3>' +
-            '<form id="mcatForm">' +
-                '<label>Slug (lowercase, used as identifier)</label>' +
-                '<input name="slug" required pattern="[a-z0-9_-]{1,64}" value="' + esc(cat ? cat.slug : '') + '"' + (isEdit ? ' readonly style="opacity:0.5;cursor:not-allowed;"' : '') + '>' +
-                '<label>Title</label>' +
-                '<input name="title" required value="' + esc(cat ? cat.title : '') + '">' +
-                '<label>Description (optional)</label>' +
-                '<textarea name="description" rows="2">' + esc(cat ? (cat.description || '') : '') + '</textarea>' +
-                '<label>Reason (shown to users when this category is disabled)</label>' +
-                '<textarea name="reason" rows="2" placeholder="e.g. Upgrading database servers. Back in ~2 hours.">' + esc(cat ? (cat.reason || '') : '') + '</textarea>' +
-                '<label><input type="checkbox" name="enabled"' + (cat ? (cat.enabled ? ' checked' : '') : ' checked') + '> Enabled (category is operational)</label>' +
-                '<label>Sort order (lower = first)</label>' +
-                '<input name="sort_order" type="number" value="' + esc(cat ? (cat.sort_order || 0) : 0) + '">' +
-                '<div style="display:flex;gap:8px;margin-top:12px;">' +
-                    '<button type="submit" class="admin-btn admin-btn-primary">Save</button>' +
-                    '<button type="button" class="admin-btn" onclick="closeAdminModal()">Cancel</button>' +
-                '</div>' +
-            '</form>'
-        );
-        document.getElementById('mcatForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            const payload = {
-                title: fd.get('title'),
-                description: fd.get('description') || null,
-                reason: fd.get('reason') || null,
-                enabled: !!fd.get('enabled'),
-                sort_order: Number(fd.get('sort_order') || 0),
-            };
-            try {
-                if (isEdit) {
-                    await adminFetch('/maintenance_categories/' + cat.id + '/update', { method: 'POST', body: JSON.stringify(payload) });
-                } else {
-                    payload.slug = fd.get('slug');
-                    await adminFetch('/maintenance_categories/create', { method: 'POST', body: JSON.stringify(payload) });
-                }
-                closeAdminModal();
-                banner('Maintenance category saved', 'success');
-                loadMaintenanceCategoriesAdmin();
-            } catch (err) {
-                banner('Save failed: ' + err.message, 'error');
-            }
-        });
-    }
+    document.getElementById('saveGlobalMaintenanceBtn')?.addEventListener('click', async () => {
+        const mode = document.getElementById('globalMaintenanceMode').value;
+        const reason = document.getElementById('globalMaintenanceReason').value;
+        try {
+            await adminFetch('/settings/update', { method: 'POST', body: JSON.stringify({ maintenance_mode: mode, maintenance_reason: reason }) });
+            banner('Maintenance settings saved', 'success');
+        } catch (e) { banner('Save failed: ' + e.message, 'error'); }
+    });
 
     async function loadLauncherAdmin() {
         try {
@@ -966,31 +906,6 @@
                 loadNewsAdmin();
                 return;
             }
-            if (act === 'editmcat') {
-                const list = (await adminFetch('/maintenance_categories')).categories;
-                const c = list.find(x => x.id == id);
-                openMcatModal(c);
-                return;
-            }
-            if (act === 'togglemcat') {
-                const enabled = t.getAttribute('data-enabled') === '1';
-                const reason = enabled ? prompt('Reason for disabling this category (shown to users):', '') : null;
-                if (enabled && reason === null) return;
-                await adminFetch('/maintenance_categories/' + id + '/toggle', {
-                    method: 'POST',
-                    body: JSON.stringify({ reason: reason || null })
-                });
-                banner(enabled ? 'Category disabled' : 'Category enabled', 'success');
-                loadMaintenanceCategoriesAdmin();
-                return;
-            }
-            if (act === 'delmcat') {
-                if (!confirm('Delete this maintenance category?')) return;
-                await adminFetch('/maintenance_categories/' + id + '/delete', { method: 'POST' });
-                banner('Deleted', 'success');
-                loadMaintenanceCategoriesAdmin();
-                return;
-            }
             if (act === 'editqa') {
                 const list = (await adminFetch('/qa')).qa;
                 const q = list.find(x => x.id == id);
@@ -1072,7 +987,7 @@
                 if (tab === 'qa') loadQaAdmin();
                 if (tab === 'partners') loadPartnersAdmin();
                 if (tab === 'launcher') loadLauncherAdmin();
-                if (tab === 'maintenance') loadMaintenanceCategoriesAdmin();
+                if (tab === 'maintenance') loadGlobalMaintenanceAdmin();
                 if (tab === 'audit') loadAudit();
             });
         });
@@ -1113,9 +1028,6 @@
             document.getElementById('cancelPartnerBtn').onclick = closeModal;
             document.getElementById('savePartnerBtn').onclick = () => savePartnerAdmin(null);
         });
-
-        const newMcatBtn = document.getElementById('newMcatBtn');
-        if (newMcatBtn) newMcatBtn.addEventListener('click', () => openMcatModal(null));
 
         const saveLauncherBtn = document.getElementById('saveLauncherSettingsBtn');
         if (saveLauncherBtn) saveLauncherBtn.addEventListener('click', saveLauncherSettings);
