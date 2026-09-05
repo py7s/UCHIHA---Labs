@@ -1253,24 +1253,6 @@ async function confirmReset(identifier, code, newPassword) {
     showBanner('Password reset is disabled. Please use Discord to sign in.', 'error');
     return false;
 }
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ identifier: identifier, code: code, new_password: newPassword })
-        });
-        if (res.ok) {
-            showBanner('Password reset successfully. You can now log in.', 'success');
-            return true;
-        } else {
-            var errData = null;
-            try { errData = await res.json(); } catch(e) {}
-            showBanner((errData && errData.detail) ? errData.detail : 'Invalid or expired reset code', 'error');
-            return false;
-        }
-    } catch(e) {
-        showBanner('Failed to reset password', 'error');
-        return false;
-    }
-}
 
 async function registerUser(username, email, phone, password) {
     showBanner('Registration is disabled. Please use Discord to sign in.', 'error');
