@@ -1,22 +1,27 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>UCHIHA - Labs© - Login</title>
 
     <link rel="stylesheet" href="../css/auth.css">
     <link rel="stylesheet" href="../css/mobile.css">
     <link rel="stylesheet" href="../css/uchiha-theme.css">
-    <link rel="icon" type="image/webp" href="../images/main/r_l_logo_1.webp">
+
+    <link
+        rel="icon"
+        type="image/webp"
+        href="../images/main/r_l_logo_1.webp"
+    >
 
     <style>
         :root {
             --ln-bg: #0e0000;
-            --ln-surface: rgba(180,0,0,0.08);
-            --ln-surface-2: rgba(0,0,0,0.35);
-            --ln-border: rgba(220,0,0,0.20);
+            --ln-surface: rgba(180, 0, 0, 0.08);
+            --ln-surface-2: rgba(0, 0, 0, 0.35);
+            --ln-border: rgba(220, 0, 0, 0.20);
             --ln-text: #ffffff;
             --ln-muted: #cc8080;
             --ln-accent: #d60000;
@@ -28,59 +33,102 @@
             box-sizing: border-box;
         }
 
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
         html {
             scroll-behavior: smooth;
         }
 
+        /* =========================================================
+           BODY / UCHIHA BACKGROUND
+           ========================================================= */
+
         body {
             margin: 0;
             min-height: 100vh;
+
             font-family: 'Segoe UI', system-ui, sans-serif;
+
             color: var(--ln-text);
+
             background:
-                radial-gradient(
-                    900px 520px at 0% -10%,
-                    rgba(220,0,0,0.18),
-                    transparent 55%
-                ),
-                radial-gradient(
-                    760px 480px at 100% 110%,
-                    rgba(180,0,0,0.14),
-                    transparent 58%
+                linear-gradient(
+                    90deg,
+                    rgba(0, 0, 0, 0.50) 0%,
+                    rgba(0, 0, 0, 0.20) 45%,
+                    rgba(0, 0, 0, 0.48) 100%
                 ),
                 linear-gradient(
-                    165deg,
-                    #0e0000 0%,
-                    #140000 50%,
-                    #0a0000 100%
-                );
+                    180deg,
+                    rgba(5, 0, 0, 0.18) 0%,
+                    rgba(10, 0, 0, 0.08) 45%,
+                    rgba(4, 0, 0, 0.60) 100%
+                ),
+                url("../images/main/uchiha-login-bg.webp");
+
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+
+            overflow-x: hidden;
         }
+
+        /* =========================================================
+           UCHIHA ATMOSPHERE
+           ========================================================= */
 
         body::before {
             content: "";
+
             position: fixed;
             inset: 0;
+
             pointer-events: none;
+
             z-index: 0;
 
-            background-image:
-                linear-gradient(
-                    rgba(255,255,255,0.025) 1px,
-                    transparent 1px
+            background:
+                radial-gradient(
+                    circle at 50% 28%,
+                    rgba(180, 0, 0, 0.12),
+                    transparent 36%
+                ),
+                radial-gradient(
+                    circle at 85% 75%,
+                    rgba(220, 0, 0, 0.14),
+                    transparent 34%
                 ),
                 linear-gradient(
-                    90deg,
-                    rgba(255,255,255,0.025) 1px,
-                    transparent 1px
+                    180deg,
+                    rgba(0, 0, 0, 0.05),
+                    rgba(0, 0, 0, 0.35)
                 );
+        }
 
-            background-size: 44px 44px;
+        /* =========================================================
+           VIGNETTE
+           ========================================================= */
 
-            mask-image:
+        body::after {
+            content: "";
+
+            position: fixed;
+            inset: 0;
+
+            pointer-events: none;
+
+            z-index: 0;
+
+            background:
                 radial-gradient(
-                    ellipse 80% 70% at 50% 40%,
-                    black 20%,
-                    transparent 100%
+                    ellipse at center,
+                    transparent 40%,
+                    rgba(0, 0, 0, 0.38) 100%
                 );
         }
 
@@ -95,6 +143,7 @@
 
         .login-nav {
             position: absolute;
+
             top: 0;
             right: 0;
 
@@ -113,24 +162,30 @@
             max-width: none;
 
             margin: 0;
+
             padding: 18px 22px;
 
             display: flex;
+
             align-items: center;
             justify-content: flex-end;
 
             gap: 12px;
         }
 
-        /* UCHIHA LABS */
+        /* =========================================================
+           UCHIHA LABS BRAND
+           ========================================================= */
 
         .login-brand {
             display: inline-flex;
+
             align-items: center;
 
             gap: 0.75rem;
 
             font-weight: 700;
+
             font-size: 1.05rem;
 
             letter-spacing: -0.02em;
@@ -145,6 +200,7 @@
             border-radius: 14px;
 
             display: flex;
+
             align-items: center;
             justify-content: center;
 
@@ -160,29 +216,37 @@
             font-size: 1.15rem;
 
             box-shadow:
-                0 12px 28px rgba(220,0,0,0.35);
+                0 12px 28px rgba(220, 0, 0, 0.35);
         }
 
-        /* LANGUAGE SWITCH */
+        /* =========================================================
+           LANGUAGE SWITCH
+           ========================================================= */
 
         .login-lang {
             display: inline-flex;
 
             border-radius: 12px;
 
-            border: 1px solid var(--ln-border);
+            border:
+                1px solid
+                var(--ln-border);
 
             overflow: hidden;
 
-            background: rgba(20,0,0,0.5);
+            background:
+                rgba(20, 0, 0, 0.5);
 
             margin-left: 0;
         }
 
         .login-lang button {
-            padding: 0.45rem 0.75rem;
+            padding:
+                0.45rem
+                0.75rem;
 
             font-size: 0.8rem;
+
             font-weight: 700;
 
             color: var(--ln-muted);
@@ -202,14 +266,14 @@
             color: var(--ln-text);
 
             background:
-                rgba(220,0,0,0.12);
+                rgba(220, 0, 0, 0.12);
         }
 
         .login-lang button.active {
             color: #fff;
 
             background:
-                rgba(220,0,0,0.28);
+                rgba(220, 0, 0, 0.28);
         }
 
         /* =========================================================
@@ -219,7 +283,9 @@
         .login-shell {
             position: relative;
 
-            z-index: 1;
+            z-index: 2;
+
+            width: 100%;
 
             max-width: 1080px;
 
@@ -234,7 +300,9 @@
 
             display: grid;
 
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns:
+                1fr
+                1fr;
 
             gap:
                 clamp(2rem, 4vw, 3.5rem);
@@ -275,12 +343,14 @@
 
             border:
                 1px solid
-                rgba(220,0,0,0.35);
+                rgba(220, 0, 0, 0.35);
 
             background:
-                rgba(220,0,0,0.1);
+                rgba(220, 0, 0, 0.10);
 
             margin-bottom: 1.25rem;
+
+            backdrop-filter: blur(6px);
         }
 
         .login-visual__badge svg {
@@ -305,6 +375,9 @@
             letter-spacing: -0.035em;
 
             color: #ffffff;
+
+            text-shadow:
+                0 4px 25px rgba(0, 0, 0, 0.75);
         }
 
         .login-visual__lead {
@@ -317,7 +390,14 @@
             color: var(--ln-muted);
 
             max-width: 36ch;
+
+            text-shadow:
+                0 2px 15px rgba(0, 0, 0, 0.8);
         }
+
+        /* =========================================================
+           PERKS
+           ========================================================= */
 
         .login-perks {
             display: flex;
@@ -342,12 +422,12 @@
 
             border:
                 1px solid
-                var(--ln-border);
+                rgba(220, 0, 0, 0.20);
 
             background:
-                var(--ln-surface-2);
+                rgba(0, 0, 0, 0.55);
 
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
 
             font-size: 0.92rem;
 
@@ -355,12 +435,19 @@
 
             transition:
                 border-color 0.22s,
-                transform 0.22s;
+                transform 0.22s,
+                background 0.22s;
+
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.25);
         }
 
         .login-perk:hover {
             border-color:
-                rgba(220,0,0,0.45);
+                rgba(220, 0, 0, 0.50);
+
+            background:
+                rgba(20, 0, 0, 0.70);
 
             transform:
                 translateX(4px);
@@ -408,10 +495,10 @@
 
             box-shadow:
                 0 24px 56px
-                rgba(6,10,23,0.55),
+                rgba(0, 0, 0, 0.65),
 
                 0 0 80px
-                rgba(88,101,242,0.12);
+                rgba(88, 101, 242, 0.14);
         }
 
         @keyframes login-glow {
@@ -451,13 +538,13 @@
             background:
                 linear-gradient(
                     165deg,
-                    rgba(20,0,0,0.96),
-                    rgba(10,0,0,0.98)
+                    rgba(20, 0, 0, 0.94),
+                    rgba(5, 0, 0, 0.97)
                 );
 
             border:
                 1px solid
-                rgba(220,0,0,0.12);
+                rgba(220, 0, 0, 0.12);
 
             padding:
                 clamp(
@@ -471,7 +558,13 @@
             flex-direction: column;
 
             gap: 1.35rem;
+
+            backdrop-filter: blur(14px);
         }
+
+        /* =========================================================
+           CARD HEADER
+           ========================================================= */
 
         .login-card__head h2 {
             margin:
@@ -494,28 +587,9 @@
             color: var(--ln-muted);
         }
 
-        .login-hint {
-            padding:
-                0.85rem
-                1rem;
-
-            border-radius: 12px;
-
-            font-size: 0.88rem;
-
-            font-weight: 600;
-
-            line-height: 1.45;
-
-            border:
-                1px solid
-                rgba(220,0,0,0.15);
-
-            background:
-                rgba(0,0,0,0.25);
-
-            color: var(--ln-muted);
-        }
+        /* =========================================================
+           ACTIONS
+           ========================================================= */
 
         .login-actions {
             display: flex;
@@ -532,11 +606,13 @@
 
             justify-content: center;
 
-            gap: 0.55rem;
+            gap: 0.7rem;
 
             padding:
                 0.95rem
                 1.2rem;
+
+            min-height: 54px;
 
             border-radius: 12px;
 
@@ -554,19 +630,40 @@
                 opacity 0.2s;
         }
 
+        /* =========================================================
+           DISCORD BUTTON
+           ========================================================= */
+
         .login-btn--discord {
             background:
                 linear-gradient(
                     135deg,
-                    #5865f2,
-                    #7c3aed
+                    #5865f2 0%,
+                    #6d55ee 50%,
+                    #7c3aed 100%
                 );
 
             color: #fff;
 
             box-shadow:
                 0 14px 32px
-                rgba(88,101,242,0.42);
+                rgba(88, 101, 242, 0.42),
+
+                0 0 35px
+                rgba(88, 101, 242, 0.18);
+        }
+
+        .login-btn--discord svg {
+            width: 24px;
+            height: 24px;
+
+            flex-shrink: 0;
+        }
+
+        .login-btn--discord span {
+            font-size: 1rem;
+
+            font-weight: 700;
         }
 
         .login-btn--discord:hover:not(:disabled) {
@@ -575,7 +672,10 @@
 
             box-shadow:
                 0 18px 40px
-                rgba(88,101,242,0.5);
+                rgba(88, 101, 242, 0.55),
+
+                0 0 45px
+                rgba(88, 101, 242, 0.22);
         }
 
         .login-btn--discord:disabled {
@@ -588,9 +688,13 @@
             box-shadow: none;
         }
 
+        /* =========================================================
+           SUPPORT BUTTON
+           ========================================================= */
+
         .login-btn--ghost {
             background:
-                rgba(30,0,0,0.45);
+                rgba(30, 0, 0, 0.55);
 
             color: var(--ln-muted);
 
@@ -603,11 +707,18 @@
             color: var(--ln-text);
 
             border-color:
-                rgba(220,0,0,0.4);
+                rgba(220, 0, 0, 0.4);
 
             background:
-                rgba(220,0,0,0.1);
+                rgba(220, 0, 0, 0.12);
+
+            transform:
+                translateY(-1px);
         }
+
+        /* =========================================================
+           FOOTER
+           ========================================================= */
 
         .login-footer {
             text-align: center;
@@ -638,7 +749,6 @@
            ========================================================= */
 
         @media (max-width: 900px) {
-
             .login-nav__inner {
                 padding:
                     14px
@@ -681,7 +791,6 @@
         }
 
         @media (max-width: 480px) {
-
             .login-nav__inner {
                 padding:
                     12px
@@ -726,19 +835,16 @@
          ========================================================= -->
 
     <header class="login-nav">
-
         <div class="login-nav__inner">
 
             <a
                 class="login-brand"
                 href="../index.html"
             >
-
                 <span
                     class="login-brand__mark"
                     aria-hidden="true"
                 >
-
                     <svg
                         width="24"
                         height="24"
@@ -747,7 +853,6 @@
                         stroke="currentColor"
                         stroke-width="2"
                     >
-
                         <path
                             d="
                                 M12 2L2 7l10 5 10-5-10-5z
@@ -755,15 +860,12 @@
                                 M2 12l10 5 10-5
                             "
                         />
-
                     </svg>
-
                 </span>
 
                 <span>
                     UCHIHA Labs
                 </span>
-
             </a>
 
             <div
@@ -771,7 +873,6 @@
                 role="group"
                 aria-label="Language"
             >
-
                 <button
                     id="langDe"
                     class="active"
@@ -784,11 +885,9 @@
                 >
                     EN
                 </button>
-
             </div>
 
         </div>
-
     </header>
 
 
@@ -798,7 +897,9 @@
 
     <main class="login-shell">
 
-        <!-- LEFT -->
+        <!-- =====================================================
+             LEFT
+             ===================================================== -->
 
         <div class="login-visual">
 
@@ -811,7 +912,6 @@
                     height="14"
                     aria-hidden="true"
                 >
-
                     <path
                         d="
                         M60.1045 4.8978C55.5792 2.8214 50.7265
@@ -856,7 +956,6 @@
                         37.3253 47.3178 37.3253Z
                         "
                     />
-
                 </svg>
 
                 Discord OAuth2
@@ -999,7 +1098,9 @@
         </div>
 
 
-        <!-- RIGHT LOGIN CARD -->
+        <!-- =====================================================
+             RIGHT LOGIN CARD
+             ===================================================== -->
 
         <div class="login-card-wrap">
 
@@ -1021,31 +1122,32 @@
 
                 <div class="login-actions">
 
+                    <!-- DISCORD LOGIN -->
+
                     <button
                         type="button"
                         class="login-btn login-btn--discord"
                         id="discordLoginBtn"
-                        data-i18n="discord_login"
                     >
+
+                        <!-- Discord Logo -->
 
                         <svg
                             viewBox="0 0 71 55"
                             fill="currentColor"
-                            width="20"
-                            height="20"
+                            width="24"
+                            height="24"
                             aria-hidden="true"
                         >
-
                             <path
                                 d="
                                 M60.1045 4.8978C55.5792 2.8214
                                 50.7265 1.2916 45.6527 0.41542C45.5603
-                                0.39851 45.468 0.440769 45.4204 0.525289
-                                C44.7963 1.6353 44.105 3.0834 43.6209
-                                4.2216C38.1637 3.4046 32.7345 3.4046
-                                27.3892 4.2216C26.905 3.0581 26.1886
-                                1.6353 25.5617 0.525289C25.5141 0.443589
-                                25.4218 0.40133 25.3294 0.41542C20.2584
+                                0.39851 45.468 0.440769 45.4204 0.525289C44.7963
+                                1.6353 44.105 3.0834 43.6209 4.2216C38.1637
+                                3.4046 32.7345 3.4046 27.3892 4.2216C26.905
+                                3.0581 26.1886 1.6353 25.5617 0.525289C25.5141
+                                0.443589 25.4218 0.40133 25.3294 0.41542C20.2584
                                 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384
                                 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795
                                 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005
@@ -1081,7 +1183,6 @@
                                 37.3253 47.3178 37.3253Z
                                 "
                             />
-
                         </svg>
 
                         <span data-i18n="discord_login">
@@ -1090,6 +1191,8 @@
 
                     </button>
 
+
+                    <!-- SUPPORT -->
 
                     <a
                         class="login-btn login-btn--ghost"
@@ -1140,7 +1243,6 @@
          ========================================================= -->
 
     <script>
-
         (function() {
 
             const translations = {
@@ -1175,7 +1277,6 @@
                 },
 
                 en: {
-
                     welcome:
                         'Welcome back',
 
@@ -1207,6 +1308,10 @@
             };
 
 
+            /* =====================================================
+               LANGUAGE
+               ===================================================== */
+
             function applyLang(lang) {
 
                 document
@@ -1223,7 +1328,6 @@
 
                             el.textContent =
                                 translations[lang][key];
-
                         }
 
                     });
@@ -1245,6 +1349,10 @@
             }
 
 
+            /* =====================================================
+               DE
+               ===================================================== */
+
             document
                 .getElementById('langDe')
                 .addEventListener(
@@ -1262,10 +1370,13 @@
                             .remove('active');
 
                         applyLang('de');
-
                     }
                 );
 
+
+            /* =====================================================
+               EN
+               ===================================================== */
 
             document
                 .getElementById('langEn')
@@ -1284,10 +1395,13 @@
                             .remove('active');
 
                         applyLang('en');
-
                     }
                 );
 
+
+            /* =====================================================
+               DISCORD OAUTH2
+               ===================================================== */
 
             document.addEventListener(
                 'DOMContentLoaded',
@@ -1315,12 +1429,15 @@
                                 window.location.href =
                                     'https://uchiha-backend-d1n7.onrender.com/api/auth/discord?return_to=' +
                                     returnTo;
-
                             }
                         );
 
                     }
 
+
+                    /* =================================================
+                       LOAD SAVED LANGUAGE
+                       ================================================= */
 
                     var saved =
                         (
@@ -1357,16 +1474,13 @@
                             .remove('active');
 
                         applyLang('de');
-
                     }
 
                 }
             );
 
         })();
-
     </script>
 
 </body>
-
 </html>
