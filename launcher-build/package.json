@@ -46,27 +46,18 @@
                   "win":  {
                               "target":  [
                                              {
-                                                 "target":  "nsis",
+                                                 "target":  "portable",
                                                  "arch":  [
                                                               "x64"
                                                           ]
                                              }
                                          ],
                               "icon":  "icon.ico",
-                              "artifactName":  "UCHIHA-Launcher-Setup.exe"
+                              "artifactName":  "UCHIHA-Launcher.exe"
                           },
                   "asar":  false,
-              "nsis":  {
-                           "oneClick":  false,
-                           "perMachine":  false,
-                           "allowToChangeInstallationDirectory":  true,
-                           "allowElevation":  true,
-                           "createDesktopShortcut":  true,
-                           "createStartMenuShortcut":  true,
-                           "shortcutName":  "UCHIHA Launcher",
-                           "installerHeader":  "build/installer-header.bmp",
-                           "installerSidebar":  "build/installer-sidebar.bmp",
-                           "deleteAppDataOnUninstall":  true
+              "portable":  {
+                           "artifactName":  "UCHIHA-Launcher.exe"
                        }
                },
     "dependencies":  {
