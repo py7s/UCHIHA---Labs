@@ -2775,7 +2775,7 @@ function openWriteReviewModal() {
         var c = productsData.categorys[0];
         Object.keys(c).forEach(function(k) { if (c[k] !== 'Coming Soon') apiCats[c[k]] = true; });
     }
-    var productTypes = Object.keys(apiCats).length > 0 ? Object.keys(apiCats) : ['Macro Tool', 'FiveM Script', 'Discord Bot', 'License Manager', 'Other'];
+    var productTypes = Object.keys(apiCats).length > 0 ? Object.keys(apiCats) : ['Macro Tool', 'FiveM Script', 'Automation Tool', 'License Manager', 'Other'];
     inner.innerHTML =
         '<div class="write-review-form">' +
             '<h2 class="write-review-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Write a Review</h2>' +
