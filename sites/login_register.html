@@ -64,10 +64,7 @@
             max-width: 1120px;
             margin: 0 auto;
             padding: 0.95rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
+            position: relative;
         }
 
         .login-brand {
@@ -98,7 +95,10 @@
             border: 1px solid var(--ln-border);
             overflow: hidden;
             background: rgba(20,0,0,0.5);
-            margin-left: auto;
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         .login-lang button {
@@ -339,7 +339,7 @@
 
         @media (max-width: 480px) {
             .login-nav__inner { padding-inline: 1rem; }
-            .login-lang { width: auto; }
+            .login-lang { right: 1rem; }
         }
     </style>
 </head>
