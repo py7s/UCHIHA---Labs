@@ -1,76 +1,78 @@
 {
-    "name":  "uchiha-launcher",
-    "version":  "1.0.0",
-    "description":  "UCHIHA Labs Desktop Launcher - the website, as a native Windows app.",
-    "main":  "main.js",
-    "scripts":  {
-                    "start":  "electron .",
-                    "build":  "electron-builder --win --x64"
-                },
-    "author":  "UCHIHA Labs",
-    "license":  "MIT",
-    "devDependencies":  {
-                            "@electron/asar":  "^4.3.0",
-                            "@electron/packager":  "^20.3.0",
-                            "7zip-bin":  "^5.2.0",
-                            "electron":  "^33.2.0",
-                            "electron-builder":  "^25.1.8",
-                            "electron-packager":  "^17.1.2"
-                        },
-    "build":  {
-                  "appId":  "com.uchihalabs.launcher",
-                  "productName":  "UCHIHA-Launcher",
-                  "directories":  {
-                                      "output":  "out-20260903135640"
-                                  },
-                  "files":  [
-                                "main.js",
-                                "preload.js",
-                                "package.json",
-                                "icon.png",
-                                "icon.ico"
-                            ],
-                  "extraResources":  [
-                                         {
-                                             "from":  "..",
-                                             "to":  "site",
-                                             "filter":  [
-                                                            "index.html",
-                                                            "css/**",
-                                                            "js/**",
-                                                            "images/**",
-                                                            "sites/**"
-                                                        ]
-                                         }
-                                     ],
-                  "win":  {
-                              "target":  [
-                                             {
-                                                 "target":  "nsis",
-                                                 "arch":  [
-                                                              "x64"
-                                                          ]
-                                             }
-                                         ],
-                              "icon":  "icon.ico",
-                              "artifactName":  "UCHIHA-Launcher-Setup.exe"
-                          },
-                  "asar":  false,
-              "nsis":  {
-                           "oneClick":  false,
-                           "perMachine":  false,
-                           "allowToChangeInstallationDirectory":  true,
-                           "allowElevation":  true,
-                           "createDesktopShortcut":  true,
-                           "createStartMenuShortcut":  true,
-                           "shortcutName":  "UCHIHA Launcher",
-                           "installerHeader":  "build/installer-header.bmp",
-                           "installerSidebar":  "build/installer-sidebar.bmp",
-                           "deleteAppDataOnUninstall":  true
-                       }
-               },
-    "dependencies":  {
-                         "adm-zip":  "^0.6.0",
-                         "ffmpeg-static":  "^5.3.0"
-                     }
+    "name": "uchiha-launcher",
+    "version": "1.0.0",
+    "description": "UCHIHA Labs Desktop Launcher - the website, as a native Windows app.",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "build": "electron-builder --win --x64"
+    },
+    "author": "UCHIHA Labs",
+    "license": "MIT",
+    "devDependencies": {
+        "@electron/asar": "^4.3.0",
+        "@electron/packager": "^20.3.0",
+        "7zip-bin": "^5.2.0",
+        "electron": "^33.2.0",
+        "electron-builder": "^25.1.8",
+        "electron-packager": "^17.1.2"
+    },
+    "build": {
+        "appId": "com.uchihalabs.launcher",
+        "productName": "UCHIHA-Launcher",
+        "directories": {
+            "output": "out-20260903135640"
+        },
+        "files": [
+            "main.js",
+            "preload.js",
+            "package.json",
+            "icon.png",
+            "icon.ico"
+        ],
+        "extraResources": [
+            {
+                "from": "..",
+                "to": "site",
+                "filter": [
+                    "index.html",
+                    "css/**",
+                    "js/**",
+                    "images/**",
+                    "sites/**"
+                ]
+            }
+        ],
+        "win": {
+            "target": [
+                {
+                    "target": "nsis",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ],
+            "icon": "icon.ico",
+            "artifactName": "UCHIHA-Launcher-Setup.exe"
+        },
+        "asar": false,
+        "nsis": {
+            "oneClick": false,
+            "perMachine": false,
+            "allowToChangeInstallationDirectory": true,
+            "allowElevation": true,
+            "createDesktopShortcut": true,
+            "createStartMenuShortcut": true,
+            "shortcutName": "UCHIHA Launcher",
+            "installerHeader": "build/installer-header.bmp",
+            "installerSidebar": "build/installer-sidebar.bmp",
+            "deleteAppDataOnUninstall": true
+        }
+    },
+    "dependencies": {
+        "adm-zip": "^0.6.0",
+        "ffmpeg-static": "^5.3.0",
+        "png-to-ico": "^3.0.2",
+        "sharp": "^0.35.4"
+    }
 }
