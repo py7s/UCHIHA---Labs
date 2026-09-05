@@ -987,6 +987,7 @@ function checkGlobalMaintenance() {
     var existing = document.getElementById('global-maintenance-overlay');
     if (existing) existing.remove();
     if (config.maintenance_mode !== 'on') return;
+    if (window.location.pathname.includes('login_register')) return;
     var rank = getCurrentPermissionRank();
     if (rank >= 5) return;
     var overlay = document.createElement('div');

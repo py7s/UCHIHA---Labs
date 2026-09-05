@@ -498,6 +498,15 @@
 
     </div>
 
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('discord_token')) return;
+            if (!sessionStorage.getItem('uchiha_token')) {
+                window.location.href = './sites/login_register.html';
+            }
+        })();
+    </script>
     <script src="js/main.js"></script>
 
     <script>
