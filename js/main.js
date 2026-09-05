@@ -3972,7 +3972,7 @@ async function downloadLauncher() {
             // user cancelled or error already shown
         }
     } else {
-        var assetUrl = 'https://github.com/py7s/UCHIHA---Labs/releases/download/v1.0.0/UCHIHA-Launcher.exe';
+        var assetUrl = API_BASE_RAW + '/api/launcher/download?platform=windows';
         var banner = document.createElement('div');
         banner.className = 'uchiha-download-modal';
         banner.id = 'uchihaDownloadModal';
