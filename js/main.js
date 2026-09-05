@@ -4006,6 +4006,19 @@ async function downloadLauncher() {
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
+    if (window.uchihaLauncher && window.uchihaLauncher.onDiscordAuthCallback) {
+        window.uchihaLauncher.onDiscordAuthCallback(function(data) {
+            if (data && data.token) {
+                sessionStorage.setItem('uchiha_token', data.token);
+                if (data.account) {
+                    try { sessionStorage.setItem('uchiha_user', JSON.stringify(data.account)); } catch(e) {}
+                }
+                if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
+                checkLoginStatus();
+            }
+        });
+    }
+
     (function() {
         var params = new URLSearchParams(window.location.search);
         var discordToken = params.get('discord_token');

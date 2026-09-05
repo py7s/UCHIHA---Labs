@@ -1418,17 +1418,18 @@
                         discordBtn.addEventListener(
                             'click',
                             function() {
-
-                                var returnTo =
-                                    encodeURIComponent(
-                                        window.location.origin +
-                                        '/index.html'
-                                    );
-
-
-                                window.location.href =
-                                    'https://uchiha-backend-d1n7.onrender.com/api/auth/discord?return_to=' +
-                                    returnTo;
+                                if (window.uchihaLauncher && window.uchihaLauncher.loginWithDiscord) {
+                                    window.uchihaLauncher.loginWithDiscord();
+                                } else {
+                                    var returnTo =
+                                        encodeURIComponent(
+                                            window.location.origin +
+                                            '/index.html'
+                                        );
+                                    window.location.href =
+                                        'https://uchiha-backend-d1n7.onrender.com/api/auth/discord?return_to=' +
+                                        returnTo;
+                                }
                             }
                         );
 
