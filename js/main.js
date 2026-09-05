@@ -4033,6 +4033,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                     var acc = JSON.parse(decodeURIComponent(discordAccountParam));
                     sessionStorage.setItem('uchiha_user', JSON.stringify(acc));
                     sessionStorage.setItem('uchiha_role', String(acc.account_permissions || acc.account_type || 'User'));
+                    if (window.uchihaLauncher && window.uchihaLauncher.setAuth) {
+                        window.uchihaLauncher.setAuth({ token: discordToken, user: acc });
+                    }
                 } catch(e) {}
             }
             params.delete('discord_token');
@@ -4040,6 +4043,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, '', newUrl);
             if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
+            if (window.uchihaLauncher && window.uchihaLauncher.isDesktop) {
+                setTimeout(function() {
+                    window.location.href = '/index.html';
+                }, 800);
+            }
         }
         if (authError) {
             if (typeof showBanner === 'function') showBanner('Discord sign-in failed: ' + authError, 'error');
