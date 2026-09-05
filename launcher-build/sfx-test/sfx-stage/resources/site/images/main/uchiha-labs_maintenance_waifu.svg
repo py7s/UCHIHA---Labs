@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#2e0000"/>
+      <stop offset="60%" stop-color="#170000"/>
+      <stop offset="100%" stop-color="#0e0000"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4d4d"/>
+      <stop offset="50%" stop-color="#d60000"/>
+      <stop offset="100%" stop-color="#980000"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="url(#ring)" stroke-width="14"/>
+  <circle cx="256" cy="256" r="198" fill="none" stroke="#ff4d4d" stroke-width="4" opacity="0.35"/>
+  <circle cx="256" cy="256" r="110" fill="#d60000" opacity="0.15"/>
+  <path d="M256 200 a56 56 0 1 0 56 56" fill="none" stroke="#ff4d4d" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="16" fill="#ff4d4d"/>
+  <circle cx="256" cy="140" r="6" fill="#ff4d4d"/>
+  <circle cx="316" cy="316" r="6" fill="#ff4d4d"/>
+  <circle cx="196" cy="316" r="6" fill="#ff4d4d"/>
+  <text x="256" y="300" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="bold" fill="#ffffff" letter-spacing="4">MAINTENANCE</text>
+  <text x="256" y="354" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#ffb1b1" letter-spacing="2">UCHIHA - LABS</text>
+</svg>

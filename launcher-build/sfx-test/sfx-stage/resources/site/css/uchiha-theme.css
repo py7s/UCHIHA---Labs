@@ -1,0 +1,540 @@
+﻿/* ============================================================
+   UCHIHA THEME - Clean Black x Crimson (Sharingan inspired)
+   Loads LAST on every page. Redefines the shared CSS variables
+   and refines the most important components into a clean, calm
+   black/red design. No frameworks, no external fonts.
+   ============================================================ */
+
+:root {
+    --uchiha-bg: #07070a;
+    --uchiha-bg-2: #0a0a0f;
+    --uchiha-surface: #0e0e14;
+    --uchiha-surface-2: #13131b;
+    --uchiha-surface-3: #181821;
+    --uchiha-border: rgba(255, 60, 80, 0.13);
+    --uchiha-border-strong: rgba(255, 60, 80, 0.30);
+    --uchiha-accent: #e6334a;
+    --uchiha-accent-2: #ff3b47;
+    --uchiha-accent-dim: rgba(230, 51, 74, 0.14);
+    --uchiha-accent-soft: rgba(230, 51, 74, 0.06);
+    --uchiha-text: #f5f5fa;
+    --uchiha-text-2: #a9a9b6;
+    --uchiha-text-3: #71717f;
+    --uchiha-success: #3ddc84;
+    --uchiha-warning: #ffb020;
+    --uchiha-danger: #ff3b47;
+
+    /* Re-map every theme variable so sub-pages (auth/settings/
+       preferences/admin) inherit the new palette automatically. */
+    --bg-primary: var(--uchiha-bg);
+    --bg-secondary: var(--uchiha-bg-2);
+    --bg-tertiary: var(--uchiha-surface-2);
+    --bg-hover: var(--uchiha-surface-3);
+    --text-primary: var(--uchiha-text);
+    --text-secondary: var(--uchiha-text-2);
+    --text-tertiary: var(--uchiha-text-3);
+    --accent-primary: var(--uchiha-accent);
+    --accent-hover: var(--uchiha-accent-2);
+    --border-color: var(--uchiha-border);
+    --border-bright: var(--uchiha-border-strong);
+    --red: var(--uchiha-accent);
+    --red-hover: var(--uchiha-accent-2);
+    --success: var(--uchiha-success);
+    --warning: var(--uchiha-warning);
+    --danger: var(--uchiha-danger);
+    --bg-glass: rgba(230, 51, 74, 0.07);
+    --bg-glass-hover: rgba(230, 51, 74, 0.13);
+}
+
+/* ---------- Base ---------- */
+html {
+    color-scheme: dark;
+}
+
+body {
+    background-color: var(--uchiha-bg);
+    background-image:
+        radial-gradient(1100px 520px at 12% -8%, rgba(230, 51, 74, 0.10), transparent 62%),
+        radial-gradient(900px 520px at 104% 112%, rgba(140, 12, 38, 0.08), transparent 60%);
+    background-attachment: fixed;
+    color: var(--uchiha-text);
+}
+
+/* Thin crimson accent line on top of every page */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 9999;
+    background: linear-gradient(90deg, transparent, rgba(255, 59, 71, 0.85), transparent);
+    pointer-events: none;
+}
+
+::selection {
+    background: rgba(230, 51, 74, 0.45);
+    color: #ffffff;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--uchiha-bg);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 60, 80, 0.28);
+    border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 60, 80, 0.55);
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+    background: linear-gradient(180deg, #0b0b11 0%, #07070b 100%);
+    border-right: 1px solid var(--uchiha-border);
+}
+
+.sidebar-header {
+    border-bottom: 1px solid var(--uchiha-border);
+    position: relative;
+}
+
+.sidebar-header::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -1px;
+    transform: translateX(-50%);
+    width: 72%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 59, 71, 0.55), transparent);
+}
+
+.sidebar-logo {
+    border-radius: 18px;
+    box-shadow: 0 0 34px rgba(230, 51, 74, 0.18), inset 0 0 0 1px rgba(255, 59, 71, 0.25);
+}
+
+.nav-item {
+    color: var(--uchiha-text-2);
+}
+
+.nav-item:hover {
+    background: linear-gradient(90deg, rgba(230, 51, 74, 0.16), rgba(230, 51, 74, 0.02));
+    color: #ff8a94;
+    box-shadow: inset 3px 0 0 rgba(255, 59, 71, 0.55);
+}
+
+.nav-item.active {
+    background: linear-gradient(90deg, rgba(230, 51, 74, 0.20), rgba(230, 51, 74, 0.03));
+    color: #ff8a94;
+    border-left: 3px solid var(--uchiha-accent);
+    box-shadow: inset 0 0 22px rgba(230, 51, 74, 0.07);
+}
+
+.nav-item svg {
+    color: #8f1528;
+}
+.nav-item:hover svg,
+.nav-item.active svg {
+    color: var(--uchiha-accent-2);
+}
+
+.discord-join-btn {
+    background: linear-gradient(135deg, #a8162e, #6e0e20);
+    box-shadow: 0 2px 10px rgba(168, 22, 46, 0.35);
+}
+.discord-join-btn:hover {
+    background: linear-gradient(135deg, #5865f2, #4752c4);
+}
+
+.sidebar-footer {
+    border-top: 1px solid var(--uchiha-border);
+}/* ---------- Top bar ---------- */
+.top-bar {
+    background: rgba(9, 9, 13, 0.82);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--uchiha-border);
+}
+
+.top-tab {
+    color: var(--uchiha-text-2);
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.top-tab:hover {
+    background: var(--uchiha-accent-soft);
+    color: #ff8a94;
+    box-shadow: none;
+}
+
+.top-tab.active {
+    background: linear-gradient(180deg, rgba(230, 51, 74, 0.22), rgba(230, 51, 74, 0.06));
+    color: #ff8a94;
+    box-shadow: inset 0 -2px 0 var(--uchiha-accent);
+}
+
+.search-container {
+    background: rgba(14, 14, 20, 0.9);
+    border: 1px solid var(--uchiha-border);
+    border-radius: 10px;
+}
+
+.search-container:focus-within {
+    border-color: var(--uchiha-border-strong);
+    box-shadow: 0 0 0 3px rgba(230, 51, 74, 0.12);
+}
+
+.icon-action-btn {
+    border-radius: 8px;
+}
+.icon-action-btn:hover {
+    background: var(--uchiha-accent-soft);
+    box-shadow: 0 0 12px rgba(230, 51, 74, 0.10);
+}
+
+/* ---------- Buttons ---------- */
+.auth-btn {
+    border-radius: 9px;
+}
+
+.login-btn {
+    background: linear-gradient(135deg, #c11430, #e6334a);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(225, 51, 74, 0.25);
+}
+.login-btn:hover {
+    background: linear-gradient(135deg, #e6334a, #ff5560);
+    transform: translateY(-1px);
+}
+
+.register-btn {
+    background: rgba(230, 51, 74, 0.10);
+    color: #ff8a94;
+    border: 1px solid var(--uchiha-border-strong);
+}
+.register-btn:hover {
+    background: rgba(230, 51, 74, 0.20);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #c11430, #e6334a);
+    border: none;
+    box-shadow: 0 4px 16px rgba(225, 51, 74, 0.28);
+    border-radius: 9px;
+}
+.btn-primary:hover {
+    background: linear-gradient(135deg, #e6334a, #ff5560);
+    box-shadow: 0 6px 20px rgba(225, 51, 74, 0.40);
+}
+
+.btn-secondary {
+    background: var(--uchiha-surface-2);
+    color: var(--uchiha-text-2);
+    border: 1px solid var(--uchiha-border);
+    border-radius: 9px;
+}
+.btn-secondary:hover {
+    background: var(--uchiha-surface-3);
+    color: #fff;
+    border-color: var(--uchiha-border-strong);
+}
+
+.uchiha-btn-primary {
+    background: linear-gradient(135deg, #c11430, #e6334a);
+}
+.uchiha-btn-secondary {
+    background: var(--uchiha-surface-2);
+    border: 1px solid var(--uchiha-border);
+    color: var(--uchiha-text-2);
+}
+
+.pagination-btn {
+    border-radius: 8px;
+}
+.pagination-btn.active {
+    background: var(--uchiha-accent);
+    border-color: var(--uchiha-accent);
+}
+
+/* ---------- Inputs / selects ---------- */
+.form-control,
+.admin-input,
+.cart-coupon-input,
+.modal-coupon-input {
+    background: rgba(10, 10, 14, 0.85) !important;
+    border: 1px solid var(--uchiha-border) !important;
+    border-radius: 9px !important;
+    color: var(--uchiha-text) !important;
+}
+.form-control:focus,
+.admin-input:focus,
+.cart-coupon-input:focus,
+.modal-coupon-input:focus {
+    border-color: var(--uchiha-border-strong) !important;
+    box-shadow: 0 0 0 3px rgba(230, 51, 74, 0.14) !important;
+    background: rgba(12, 12, 18, 0.95) !important;
+}
+.form-control::placeholder {
+    color: #585863 !important;
+}
+
+.styled-select,
+.per-page-select select {
+    background: var(--uchiha-surface-2) !important;
+    border: 1px solid var(--uchiha-border) !important;
+    color: var(--uchiha-text) !important;
+    border-radius: 8px !important;
+}
+.styled-select option {
+    background: var(--uchiha-surface-2);
+    color: var(--uchiha-text);
+}/* ---------- Cards ---------- */
+.product-card,
+.info-card,
+.glass-card,
+.summary-card,
+.stat-card,
+.payment-method-card,
+.contact-card,
+.qa-item,
+.news-card,
+.partner-card {
+    background: linear-gradient(180deg, rgba(16, 16, 22, 0.92), rgba(11, 11, 16, 0.92)) !important;
+    border: 1px solid var(--uchiha-border) !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+}
+
+.product-card:hover,
+.info-card:hover,
+.contact-card:hover,
+.payment-method-card:hover {
+    border-color: var(--uchiha-border-strong) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+.category-tab {
+    border-radius: 8px !important;
+    color: var(--uchiha-text-2) !important;
+}
+.category-tab.active {
+    background: var(--uchiha-accent-dim) !important;
+    color: #ff8a94 !important;
+    border: 1px solid var(--uchiha-border-strong) !important;
+}
+.category-tab:hover {
+    color: #ff8a94 !important;
+}
+
+.glass-card {
+    background: rgba(15, 15, 22, 0.75) !important;
+    border: 1px solid rgba(255, 60, 80, 0.10) !important;
+}
+
+/* ---------- Badges ---------- */
+.badge {
+    background: var(--uchiha-accent);
+    box-shadow: 0 0 8px rgba(230, 51, 74, 0.4);
+}
+
+.role-badge.owner,
+.role-badge.admin {
+    background: rgba(255, 59, 71, 0.16);
+    color: #ff7a85;
+    border: 1px solid rgba(255, 59, 71, 0.35);
+}
+
+/* ---------- Modals / overlays / dropdowns ---------- */
+.overlay,
+.product-modal-overlay,
+.checkout-modal-overlay,
+.uchiha-download-modal {
+    background: rgba(3, 3, 6, 0.78) !important;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.modal-content,
+.checkout-modal-inner,
+.uchiha-download-panel,
+.product-modal-panel,
+.dropdown-panel {
+    background: linear-gradient(180deg, #111118, #0b0b10) !important;
+    border: 1px solid var(--uchiha-border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 59, 71, 0.05) !important;
+}
+
+.dropdown-panel {
+    background: rgba(13, 13, 19, 0.96) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--uchiha-border) !important;
+}
+
+.uchiha-progress {
+    background: var(--uchiha-surface-2);
+    border: 1px solid var(--uchiha-border);
+}
+.uchiha-progress-bar {
+    background: linear-gradient(90deg, #c11430, #ff3b47);
+}
+
+/* ---------- Tables & status badges ---------- */
+.orders-table,
+.admin-table {
+    border: 1px solid var(--uchiha-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table-row:hover,
+.admin-table tbody tr:hover {
+    background: var(--uchiha-accent-soft);
+}
+
+.status-badge.paid,
+.status-pill.active {
+    background: rgba(61, 220, 132, 0.14);
+    color: #4fe08f;
+    border: 1px solid rgba(61, 220, 132, 0.35);
+}
+.status-badge.pending {
+    background: rgba(255, 176, 32, 0.14);
+    color: #ffc355;
+    border: 1px solid rgba(255, 176, 32, 0.35);
+}
+
+.tag {
+    background: var(--uchiha-accent-soft) !important;
+    color: #ff8a94 !important;
+    border: 1px solid var(--uchiha-border) !important;
+    border-radius: 999px !important;
+}/* ---------- Auth pages ---------- */
+.auth-card,
+.settings-section,
+.admin-panel,
+.panel,
+.review-card {
+    background: rgba(15, 15, 22, 0.85) !important;
+    border: 1px solid var(--uchiha-border) !important;
+    box-shadow: 0 18px 70px rgba(0, 0, 0, 0.55) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.auth-logo,
+.settings-logo img,
+.admin-logo img {
+    border-radius: 16px;
+    box-shadow: 0 0 26px rgba(230, 51, 74, 0.28), inset 0 0 0 1px rgba(255, 59, 71, 0.3) !important;
+}
+
+.auth-title,
+.settings-logo h2 {
+    background: linear-gradient(120deg, #ff5c68 32%, #ffffff 50%, #ff5c68 68%) !important;
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shinyMove 3s linear infinite;
+}
+
+#authTabIndicator {
+    background: linear-gradient(135deg, #a8112c, #e6334a);
+}
+
+.auth-btn,
+.admin-btn-primary {
+    background: linear-gradient(135deg, #c11430, #e6334a) !important;
+    border-radius: 9px;
+}
+
+.auth-alt-link,
+.auth-back {
+    color: var(--uchiha-text-2) !important;
+}
+.auth-alt-link:hover,
+.auth-back:hover {
+    color: #ff8a94 !important;
+}
+
+/* ---------- Settings sub-pages ---------- */
+.settings-sidebar {
+    background: linear-gradient(180deg, rgba(11, 11, 17, 0.97), rgba(7, 7, 11, 0.98)) !important;
+    border-right: 1px solid var(--uchiha-border) !important;
+}
+
+.settings-nav-item {
+    color: var(--uchiha-text-2) !important;
+}
+.settings-nav-item:hover {
+    background: rgba(230, 51, 74, 0.10) !important;
+    color: #fff !important;
+    border-left-color: var(--uchiha-border-strong) !important;
+}
+.settings-nav-item.active {
+    background: linear-gradient(90deg, rgba(230, 51, 74, 0.20), rgba(230, 51, 74, 0.03)) !important;
+    color: #ff8a94 !important;
+    border-left: 3px solid var(--uchiha-accent) !important;
+}
+
+.settings-content {
+    background: transparent;
+}
+
+/* ---------- Admin ---------- */
+.admin-sidebar {
+    background: linear-gradient(180deg, #0b0b11, #07070b) !important;
+    border-right: 1px solid var(--uchiha-border) !important;
+}
+.admin-nav-item {
+    color: var(--uchiha-text-2) !important;
+}
+.admin-nav-item.active,
+.admin-nav-item:hover {
+    background: linear-gradient(90deg, rgba(230, 51, 74, 0.18), rgba(230, 51, 74, 0.03)) !important;
+    color: #ff8a94 !important;
+    border-left: 3px solid var(--uchiha-accent) !important;
+}
+.admin-panel {
+    background: var(--uchiha-surface) !important;
+    border: 1px solid var(--uchiha-border) !important;
+    border-radius: 14px !important;
+}
+
+/* ---------- Mobile menu ---------- */
+.mobile-menu-btn {
+    background: rgba(15, 15, 21, 0.9);
+    border: 1px solid var(--uchiha-border);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.mobile-menu-btn:hover {
+    background: rgba(230, 51, 74, 0.30);
+}
+
+/* ---------- Misc touches ---------- */
+.nameplate-lc small,
+.cp-profile-username {
+    color: var(--uchiha-text) !important;
+}
+
+.shiny-text {
+    background-image: linear-gradient(120deg, #a9a9b6 30%, #ffffff 50%, #a9a9b6 70%) !important;
+}
+
+.sidebar-footer .download-status {
+    color: var(--uchiha-text-2);
+}

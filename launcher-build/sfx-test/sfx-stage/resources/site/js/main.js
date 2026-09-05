@@ -4181,10 +4181,11 @@ async function downloadLauncher() {
     } else if (/Linux/i.test(ua) && !/Android/i.test(ua) && !/Windows/i.test(ua)) {
         platform = 'linux';
     }
-    var fileName = (platform === 'macos' ? 'UCHIHA-Launcher-macOS.dmg' : (platform === 'linux' ? 'UCHIHA-Launcher-linux.AppImage' : 'UCHIHA-Launcher.exe'));
+    var fileName = (platform === 'macos' ? 'UCHIHA-Launcher-macOS.dmg' : (platform === 'linux' ? 'UCHIHA-Launcher-linux.AppImage' : 'UCHIHA-Launcher-Setup.exe'));
     var token = sessionStorage.getItem('uchiha_token');
 
     if (isElectron || !isHttps) {
+        // Local / Electron: download via backend
         var downloadBase = API_BASE_RAW;
         var url = downloadBase + '/api/launcher/download?platform=' + platform;
         if (token) url += '&token=' + encodeURIComponent(token);
@@ -4208,7 +4209,8 @@ async function downloadLauncher() {
             // user cancelled or error already shown
         }
     } else {
-        var assetUrl = 'https://github.com/py7s/UCHIHA---Labs/releases/latest/download/UCHIHA-Launcher.exe';
+        // Public HTTPS site: custom download manager against GitHub Releases
+        var assetUrl = 'https://github.com/py7s/UCHIHA---Labs/releases/latest/download/UCHIHA-Launcher-Setup.exe';
         var banner = document.createElement('div');
         banner.className = 'uchiha-download-modal';
         banner.id = 'uchihaDownloadModal';
