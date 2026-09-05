@@ -4288,6 +4288,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 try { window.uchihaLauncher.setAuth({ token: token, user: user || null }); } catch (e) {}
             };
         } catch (e) {}
+        try {
+            var dlBtn = document.getElementById('downloadLauncherBtn');
+            if (dlBtn) dlBtn.style.display = 'none';
+            var dlStatus = document.getElementById('downloadStatus');
+            if (dlStatus) dlStatus.style.display = 'none';
+        } catch (e) {}
     })();
 
     window.addEventListener('uchiha:admin-saved', function(e) {
