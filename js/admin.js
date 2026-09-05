@@ -564,6 +564,8 @@
                 '<div class="admin-form-group"><label>Image URL</label><input name="image_url" value="' + esc(p && p.image_url || '') + '"></div>' +
                 '<div class="admin-form-group" style="grid-column:1/-1;"><label>Short Description</label><textarea name="description" rows="2">' + esc(p && p.description || '') + '</textarea></div>' +
                 '<div class="admin-form-group" style="grid-column:1/-1;"><label>Full Description</label><textarea name="full_description" rows="4">' + esc(p && p.full_description || '') + '</textarea></div>' +
+                (p && p.file_url ? '<div class="admin-form-group" style="grid-column:1/-1;"><label>Current File</label><a href="' + esc(p.file_url) + '" target="_blank">' + esc(p.file_name || 'download') + '</a> <button type="button" class="admin-btn admin-btn-small admin-btn-danger" id="removeProductFileBtn" data-id="' + p.id + '">Remove</button></div>' : '') +
+                '<div class="admin-form-group" style="grid-column:1/-1;"><label>Upload File (EXE/ZIP, optional)</label><input type="file" name="file" accept=".exe,.zip,.rar,.7z,.msi"></div>' +
                 '<div class="admin-form-group"><label><input type="checkbox" name="popular"' + (p && p.popular ? ' checked' : '') + '> Popular</label></div>' +
                 '<div class="admin-form-group"><label><input type="checkbox" name="is_new"' + (p && p.is_new ? ' checked' : '') + '> New</label></div>' +
             '</form>' +
@@ -695,8 +697,17 @@
 
     async function saveProduct(id) {
         const form = document.getElementById('productForm');
-        const data = collectForm(form);
+        const fileInput = form.querySelector('input[name="file"]');
+        const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
         try {
+            if (hasFile) {
+                const fd = new FormData();
+                fd.append('file', fileInput.files[0]);
+                if (id) fd.append('product_id', id);
+                const res = await fetch(adminFetch('/products/' + (id || 'new') + '/upload_file', { method: 'POST', body: fd }));
+                if (!res.ok) throw new Error('File upload failed');
+            }
+            const data = collectForm(form);
             if (id) await adminFetch('/products/' + id + '/update', { method: 'POST', body: JSON.stringify(data) });
             else await adminFetch('/products/create', { method: 'POST', body: JSON.stringify(data) });
             banner('Product saved', 'success');
@@ -1001,6 +1012,18 @@
             openModal(productForm(null));
             document.getElementById('cancelProductBtn').onclick = closeModal;
             document.getElementById('saveProductBtn').onclick = () => saveProduct(null);
+        });
+        document.getElementById('removeProductFileBtn')?.addEventListener('click', async () => {
+            const btn = document.getElementById('removeProductFileBtn');
+            const pid = btn?.getAttribute('data-id');
+            if (!pid) return;
+            if (!confirm('Remove attached file?')) return;
+            try {
+                await adminFetch('/products/' + pid + '/remove_file', { method: 'POST' });
+                banner('File removed', 'success');
+                const modal = document.getElementById('adminModal');
+                if (modal) { const list = (await adminFetch('/products')).products; const p = list.find(x => x.id == pid); if (p) { openModal(productForm(p)); document.getElementById('cancelProductBtn').onclick = closeModal; document.getElementById('saveProductBtn').onclick = () => saveProduct(pid); } }
+            } catch (e) { banner('Remove failed: ' + e.message, 'error'); }
         });
         document.getElementById('newCouponBtn').addEventListener('click', () => {
             openModal(couponForm(null));

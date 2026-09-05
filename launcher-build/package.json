@@ -1,6 +1,6 @@
 {
     "name":  "uchiha-launcher",
-    "version":  "1.0.0",
+    "version":  "1.0.2",
     "description":  "UCHIHA Labs Desktop Launcher - the website, as a native Windows app.",
     "main":  "main.js",
     "scripts":  {
@@ -21,7 +21,7 @@
                   "appId":  "com.uchihalabs.launcher",
                   "productName":  "UCHIHA-Launcher",
                   "directories":  {
-                                      "output":  "out-20260903135640"
+                                      "output":  "out-20260905002500"
                                   },
                   "files":  [
                                 "main.js",
@@ -68,7 +68,7 @@
                            "installerSidebar":  "build/installer-sidebar.bmp",
                            "deleteAppDataOnUninstall":  true
                        }
-              },
+               },
     "dependencies":  {
                          "adm-zip":  "^0.6.0",
                          "ffmpeg-static":  "^5.3.0"
