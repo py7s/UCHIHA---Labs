@@ -1236,90 +1236,19 @@ function updateUserProfile(user) {
 }
 
 async function loginUser(usernameOrEmail, password) {
-    try {
-        var res = await fetch(apiUrl('/api/login'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: usernameOrEmail,
-                password: password,
-                user_agent: navigator.userAgent || null,
-                time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
-                fingerprint: (navigator.userAgent + navigator.language + screen.width + screen.height) || null,
-                browser: (function() {
-                    var ua = navigator.userAgent;
-                    if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) return 'Chrome';
-                    if (ua.indexOf('Firefox') > -1) return 'Firefox';
-                    if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) return 'Safari';
-                    if (ua.indexOf('Edg') > -1) return 'Edge';
-                    if (ua.indexOf('OPR') > -1 || ua.indexOf('Opera') > -1) return 'Opera';
-                    return 'Unknown';
-                })()
-            })
-        });
-        if (res.ok) {
-            var data = await res.json();
-            sessionStorage.setItem('uchiha_token', data.token);
-            sessionStorage.setItem('uchiha_pw', password);
-            if (data.refresh_token) sessionStorage.setItem('uchiha_refresh_token', data.refresh_token);
-            if (data.account) {
-                sessionStorage.setItem('uchiha_user', JSON.stringify(data.account));
-                sessionStorage.setItem('uchiha_role', String(data.account.account_permissions || data.account.account_type || 'User'));
-                return data.account;
-            }
-            var fullUser = await fetchFullUser(data.token);
-            if (fullUser) {
-                sessionStorage.setItem('uchiha_user', JSON.stringify(fullUser));
-                sessionStorage.setItem('uchiha_role', String(fullUser.account_permissions || fullUser.account_type || 'User'));
-                return fullUser;
-            }
-            var decoded = JSON.parse(atob(data.token.split('.')[1]));
-            sessionStorage.setItem('uchiha_user', JSON.stringify(decoded));
-            sessionStorage.setItem('uchiha_role', String(decoded.account_permissions || decoded.account_type || 'User'));
-            return decoded;
-        } else {
-            var errData = null;
-            try { errData = await res.json(); } catch(e) {}
-            var msg = (errData && (errData.detail || errData.message)) ? (errData.detail || errData.message) : ('Login failed (' + res.status + ')');
-            showBanner(msg, 'error');
-            return null;
-        }
-    } catch(e) {
-        var reason = (e && e.message) ? e.message : 'Unknown error';
-        if (reason.indexOf('Failed to fetch') >= 0 || reason.indexOf('NetworkError') >= 0 || reason.indexOf('CONNECTION_REFUSED') >= 0) {
-            showBanner('Backend nicht erreichbar. Bitte versuche es später erneut.', 'error');
-        } else {
-            showBanner('Login fehlgeschlagen: ' + reason, 'error');
-        }
-        return null;
-    }
+    showBanner('Password login is disabled. Please use Discord to sign in.', 'error');
+    return null;
 }
 
 async function forgotPassword(identifier) {
-    try {
-        var res = await fetch(apiUrl('/api/forgot_password'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ identifier: identifier })
-        });
-        if (res.ok) {
-            showBanner('If the account exists, a reset code has been sent to the registered email.', 'success');
-            return true;
-        } else {
-            var errData = null;
-            try { errData = await res.json(); } catch(e) {}
-            showBanner((errData && errData.detail) ? errData.detail : 'Failed to send reset code', 'error');
-            return false;
-        }
-    } catch(e) {
-        showBanner('Failed to send reset code', 'error');
-        return false;
-    }
+    showBanner('Password reset is disabled. Please use Discord to sign in.', 'error');
+    return false;
 }
 
 async function confirmReset(identifier, code, newPassword) {
-    try {
-        var res = await fetch(apiUrl('/api/confirm_reset'), {
+    showBanner('Password reset is disabled. Please use Discord to sign in.', 'error');
+    return false;
+}
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identifier: identifier, code: code, new_password: newPassword })
@@ -1340,25 +1269,8 @@ async function confirmReset(identifier, code, newPassword) {
 }
 
 async function registerUser(username, email, phone, password) {
-    try {
-        var res = await fetch(apiUrl('/api/register'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: username, password: password, email: email, phone: phone })
-        });
-        if (res.ok) {
-            return await loginUser(username, password);
-        } else {
-            var errData = null;
-            try { errData = await res.json(); } catch(e) {}
-            var msg = (errData && (errData.detail || errData.message)) ? (errData.detail || errData.message) : 'Registration failed';
-            showBanner(msg, 'error');
-            return null;
-        }
-    } catch(e) {
-        showBanner('Registration failed: ' + (e.message || 'network error'), 'error');
-        return null;
-    }
+    showBanner('Registration is disabled. Please use Discord to sign in.', 'error');
+    return null;
 }
 
 function showTab(tabId) {
@@ -3257,20 +3169,6 @@ function getReviewsData() {
 }
 
 function setupLoginRegisterButtons() {
-    var loginBtn = document.getElementById('loginBtn');
-    var registerBtn = document.getElementById('registerBtn');
-    if (loginBtn) {
-        loginBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = './sites/login_register.html?tab=login';
-        });
-    }
-    if (registerBtn) {
-        registerBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = './sites/login_register.html?tab=register';
-        });
-    }
 }
 
 function setupProfileSidebar() {
@@ -3521,127 +3419,6 @@ async function loadPartners() {
 }
 
 function initAuthPage() {
-    var authTabs = document.querySelectorAll('.auth-tab');
-    var loginForm = document.getElementById('login-form');
-    var registerForm = document.getElementById('register-form');
-    var sliderTrack = document.getElementById('authSliderTrack');
-    var tabIndicator = document.getElementById('authTabIndicator');
-    var params = new URLSearchParams(window.location.search);
-
-    var authLogoEl = document.querySelector('.auth-logo');
-    if (authLogoEl) {
-        authLogoEl.src = '../images/main/r_l_logo_1.webp';
-        authLogoEl.onerror = function() { this.style.display = 'none'; };
-    }
-
-    function switchTab(tabName) {
-        authTabs.forEach(function(t) { t.classList.remove('active'); });
-        var targetTab = Array.from(authTabs).find(function(t) { return t.getAttribute('data-tab') === tabName; });
-        if (targetTab) targetTab.classList.add('active');
-        if (sliderTrack) sliderTrack.style.transform = tabName === 'register' ? 'translateX(-50%)' : 'translateX(0)';
-        if (tabIndicator && authTabs.length >= 2) {
-            tabIndicator.style.transform = tabName === 'register' ? 'translateX(100%)' : 'translateX(0)';
-        }
-    }
-
-    if (params.get('tab') === 'register') {
-        switchTab('register');
-    }
-
-    authTabs.forEach(function(tab) {
-        tab.addEventListener('click', function() {
-            switchTab(tab.getAttribute('data-tab'));
-        });
-    });
-
-    document.querySelectorAll('.toggle-password').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var inp = document.getElementById(btn.getAttribute('data-target'));
-            if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
-        });
-    });
-
-    var loginFormEl = document.getElementById('loginForm');
-    if (loginFormEl) {
-        loginFormEl.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            var user = await loginUser(
-                document.getElementById('login-username-email').value,
-                document.getElementById('login-password').value
-            );
-            if (user) { sessionStorage.setItem('uchiha_pending_banner', JSON.stringify({ message: 'Successfully logged in. Welcome back, ' + (user.username || 'User') + '!', type: 'success' })); window.location.href = '../index.html'; }
-        });
-    }
-
-    var forgotLink = document.getElementById('forgotPasswordLink');
-    var forgotSection = document.getElementById('forgotPasswordSection');
-    var forgotBackLink = document.getElementById('forgotBackLink');
-    var forgotFormEl = document.getElementById('forgotPasswordForm');
-    var resetFormEl = document.getElementById('resetCodeForm');
-
-    if (forgotLink && forgotSection) {
-        forgotLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (loginForm) loginForm.style.display = 'none';
-            forgotSection.style.display = 'block';
-        });
-    }
-    if (forgotBackLink) {
-        forgotBackLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (forgotSection) forgotSection.style.display = 'none';
-            if (loginForm) loginForm.style.display = 'block';
-        });
-    }
-    if (forgotFormEl) {
-        forgotFormEl.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            var identifier = document.getElementById('forgot-identifier').value.trim();
-            var sent = await forgotPassword(identifier);
-            if (sent) {
-                forgotFormEl.style.display = 'none';
-                if (resetFormEl) resetFormEl.style.display = 'block';
-                var hiddenId = document.getElementById('reset-identifier');
-                if (hiddenId) hiddenId.value = identifier;
-            }
-        });
-    }
-    if (resetFormEl) {
-        resetFormEl.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            var identifier = (document.getElementById('reset-identifier') || {}).value || '';
-            var code = document.getElementById('reset-code').value.trim();
-            var newPw = document.getElementById('reset-new-password').value;
-            var newPw2 = document.getElementById('reset-confirm-password').value;
-            if (newPw !== newPw2) { showBanner('Passwords do not match', 'error'); return; }
-            if (newPw.length < 6) { showBanner('Password must be at least 6 characters', 'error'); return; }
-            var ok = await confirmReset(identifier, code, newPw);
-            if (ok) {
-                if (forgotSection) forgotSection.style.display = 'none';
-                if (loginForm) loginForm.style.display = 'block';
-                if (forgotFormEl) forgotFormEl.style.display = 'block';
-                if (resetFormEl) resetFormEl.style.display = 'none';
-            }
-        });
-    }
-
-    var registerFormEl = document.getElementById('registerForm');
-    if (registerFormEl) {
-        registerFormEl.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            var pw = document.getElementById('register-password').value;
-            var pw2 = document.getElementById('register-confirm-password').value;
-            if (pw !== pw2) { showBanner('Passwords do not match!', 'error'); return; }
-            if (pw.length < 6) { showBanner('Password must be at least 6 characters', 'error'); return; }
-            var user = await registerUser(
-                document.getElementById('register-username').value,
-                document.getElementById('register-email').value,
-                document.getElementById('register-phone').value,
-                pw
-            );
-            if (user) { sessionStorage.setItem('uchiha_pending_banner', JSON.stringify({ message: 'Account created! Welcome, ' + (user.username || 'User') + '!', type: 'success' })); window.location.href = '../index.html'; }
-        });
-    }
 }
 
 function setupSearch() {
