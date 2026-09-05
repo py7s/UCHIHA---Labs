@@ -133,43 +133,8 @@ ipcMain.handle('launcher:downloadLauncherExe', async () => {
     }
 });
 
-async function checkForUpdates(silent = false) {
-    try {
-        const res = await fetch(API_BASE + '/api/launcher/info');
-        if (!res.ok) return;
-        const info = await res.json();
-        const remoteVersion = String(info.version || '1.0.0');
-        const localVersion = String(app.getVersion() || '1.0.0');
-        if (remoteVersion === localVersion) return;
-        const choice = dialog.showMessageBoxSync(mainWindow, {
-            type: 'question',
-            buttons: ['Jetzt updaten', 'Später'],
-            defaultId: 0,
-            title: 'Update verfügbar',
-            message: 'Ein neues Update ist verfügbar!',
-            detail: 'Aktuelle Version: ' + localVersion + '\nNeue Version: ' + remoteVersion + '\n\nMöchtest du jetzt updaten?',
-        });
-        if (choice === 0) {
-            const result = await ipcMain.invoke('launcher:downloadLauncherExe');
-            if (result && result.ok) {
-                dialog.showMessageBoxSync(mainWindow, {
-                    type: 'info',
-                    title: 'Update bereit',
-                    message: 'Das Update wurde gespeichert.',
-                    detail: 'Schließe die App und starte die neue .exe.',
-                });
-            } else if (result && !result.canceled) {
-                dialog.showErrorBox('Update fehlgeschlagen', result.error || 'Unbekannter Fehler');
-            }
-        }
-    } catch (e) {
-        if (!silent) console.error('[update] check failed:', e && e.message);
-    }
-}
-
 app.whenReady().then(() => {
     createWindow();
-    setTimeout(() => checkForUpdates(true), 3000);
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });

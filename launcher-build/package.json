@@ -1,6 +1,6 @@
 {
     "name":  "uchiha-launcher",
-    "version":  "1.0.2",
+    "version":  "1.0.0",
     "description":  "UCHIHA Labs Desktop Launcher - the website, as a native Windows app.",
     "main":  "main.js",
     "scripts":  {
@@ -21,7 +21,7 @@
                   "appId":  "com.uchihalabs.launcher",
                   "productName":  "UCHIHA-Launcher",
                   "directories":  {
-                                      "output":  "out-20260905002500"
+                                      "output":  "out-20260903135640"
                                   },
                   "files":  [
                                 "main.js",
@@ -46,18 +46,27 @@
                   "win":  {
                               "target":  [
                                              {
-                                                 "target":  "portable",
+                                                 "target":  "nsis",
                                                  "arch":  [
                                                               "x64"
                                                           ]
                                              }
                                          ],
                               "icon":  "icon.ico",
-                              "artifactName":  "UCHIHA-Launcher.exe"
+                              "artifactName":  "UCHIHA-Launcher-Setup.exe"
                           },
                   "asar":  false,
-              "portable":  {
-                           "artifactName":  "UCHIHA-Launcher.exe"
+              "nsis":  {
+                           "oneClick":  false,
+                           "perMachine":  false,
+                           "allowToChangeInstallationDirectory":  true,
+                           "allowElevation":  true,
+                           "createDesktopShortcut":  true,
+                           "createStartMenuShortcut":  true,
+                           "shortcutName":  "UCHIHA Launcher",
+                           "installerHeader":  "build/installer-header.bmp",
+                           "installerSidebar":  "build/installer-sidebar.bmp",
+                           "deleteAppDataOnUninstall":  true
                        }
                },
     "dependencies":  {
