@@ -66,8 +66,8 @@
             padding: 0.95rem 1.5rem;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 1rem;
-            flex-wrap: wrap;
         }
 
         .login-brand {
@@ -92,14 +92,13 @@
             box-shadow: 0 12px 28px rgba(220,0,0,0.35);
         }
 
-        .login-nav__spacer { flex: 1; min-width: 8px; }
-
         .login-lang {
             display: inline-flex;
             border-radius: 12px;
             border: 1px solid var(--ln-border);
             overflow: hidden;
             background: rgba(20,0,0,0.5);
+            margin-left: auto;
         }
 
         .login-lang button {
@@ -340,8 +339,7 @@
 
         @media (max-width: 480px) {
             .login-nav__inner { padding-inline: 1rem; }
-            .login-lang { order: 3; width: 100%; justify-content: center; margin-top: 0.25rem; }
-            .login-nav__spacer { display: none; }
+            .login-lang { width: auto; }
         }
     </style>
 </head>
@@ -354,7 +352,6 @@
                 </span>
                 <span>UCHIHA Labs</span>
             </a>
-            <span class="login-nav__spacer"></span>
             <div class="login-lang" role="group" aria-label="Language">
                 <button id="langDe" class="active">DE</button>
                 <button id="langEn">EN</button>
