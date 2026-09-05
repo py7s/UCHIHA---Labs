@@ -4327,8 +4327,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     await loadConfig();
-    checkGlobalMaintenance();
     await checkLoginStatus();
+    checkGlobalMaintenance();
     applyConfigVisibility();
     setupNavigation();
     setupTabs();
