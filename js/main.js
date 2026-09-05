@@ -1125,6 +1125,9 @@ async function checkLoginStatus() {
             }
             if (authButtons) authButtons.style.display = 'none';
             if (userProfileBtn) userProfileBtn.style.display = 'flex';
+            if (window.location.pathname.includes('login_register')) {
+                window.location.href = '/index.html';
+            }
             return;
         } catch(e) {
             sessionStorage.removeItem('uchiha_token');
@@ -4108,6 +4111,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (window.location.pathname.includes('login_register')) {
         await loadConfig();
         checkGlobalMaintenance();
+        await checkLoginStatus();
         initAuthPage();
         return;
     }
