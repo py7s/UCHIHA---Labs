@@ -1102,15 +1102,15 @@ async function checkLoginStatus() {
     var token = sessionStorage.getItem('uchiha_token');
     if (token) {
         try {
-            var parts = token.split('.');
-            if (parts.length === 3) {
-                var decoded = JSON.parse(atob(parts[1]));
-                var fullUser = await fetchFullUser(token);
-                if (fullUser) {
-                    sessionStorage.setItem('uchiha_user', JSON.stringify(fullUser));
-                    currentUser = fullUser;
-                    updateUserProfile(fullUser);
-                } else {
+            var fullUser = await fetchFullUser(token);
+            if (fullUser) {
+                sessionStorage.setItem('uchiha_user', JSON.stringify(fullUser));
+                currentUser = fullUser;
+                updateUserProfile(fullUser);
+            } else {
+                var parts = token.split('.');
+                if (parts.length === 3) {
+                    var decoded = JSON.parse(atob(parts[1]));
                     var stored = sessionStorage.getItem('uchiha_user');
                     var mergedUser = decoded;
                     if (stored) {
@@ -1118,13 +1118,17 @@ async function checkLoginStatus() {
                     }
                     currentUser = mergedUser;
                     updateUserProfile(mergedUser);
+                } else {
+                    sessionStorage.removeItem('uchiha_token');
+                    currentUser = null;
                 }
-                if (authButtons) authButtons.style.display = 'none';
-                if (userProfileBtn) userProfileBtn.style.display = 'flex';
-                return;
             }
-        } catch(e) {}
-        sessionStorage.removeItem('uchiha_token');
+            if (authButtons) authButtons.style.display = 'none';
+            if (userProfileBtn) userProfileBtn.style.display = 'flex';
+            return;
+        } catch(e) {
+            sessionStorage.removeItem('uchiha_token');
+        }
     }
     currentUser = null;
     if (authButtons) authButtons.style.display = 'flex';
