@@ -4014,7 +4014,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                     try { sessionStorage.setItem('uchiha_user', JSON.stringify(data.account)); } catch(e) {}
                 }
                 if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
-                checkLoginStatus();
+                setTimeout(function() {
+                    window.location.href = '/index.html';
+                }, 800);
             }
         });
     }
