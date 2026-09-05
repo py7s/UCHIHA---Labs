@@ -9,48 +9,187 @@
     <link rel="stylesheet" href="../css/mobile.css">
     <link rel="stylesheet" href="../css/uchiha-theme.css">
     <link rel="icon" type="image/webp" href="../images/main/r_l_logo_1.webp">
+    <style>
+        .login-page { max-width: 980px; margin: 0 auto; padding: 28px 24px; }
+        .login-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+        .discord-badge {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: rgba(88,101,242,0.12); border: 1px solid rgba(88,101,242,0.35);
+            color: #cfd4ff; padding: 10px 14px; border-radius: 12px;
+            font-size: 13px; font-weight: 700; box-shadow: 0 0 18px rgba(88,101,242,0.15);
+        }
+        .discord-badge svg { width: 18px; height: 18px; }
+        .welcome-title { font-size: 26px; font-weight: 800; color: #ffffff; margin-bottom: 8px; }
+        .welcome-text { color: #cc8080; font-size: 14px; margin-bottom: 22px; line-height: 1.6; }
+        .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+        .feature-box {
+            background: rgba(0,0,0,0.35); border: 1px solid rgba(220,0,0,0.20);
+            border-radius: 14px; padding: 16px; min-height: 110px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+        }
+        .feature-box h3 { color: #ffb1b1; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+        .feature-box p { color: #cc8080; font-size: 12px; line-height: 1.55; }
+        .discord-main-btn {
+            width: 100%; max-width: 420px; margin: 0 auto 14px; display: flex;
+            align-items: center; justify-content: center; gap: 10px;
+            padding: 14px 20px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, #4752c4, #5865F2); color: #fff;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            background-size: 200% auto; transition: background-position 0.4s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 0 18px rgba(88,101,242,0.35); text-decoration: none;
+        }
+        .discord-main-btn:hover { background-position: right center; transform: translateY(-1px); box-shadow: 0 0 26px rgba(88,101,242,0.55); }
+        .discord-main-btn svg { width: 20px; height: 20px; }
+        .redirect-hint {
+            text-align: center; color: #cc8080; font-size: 12px; margin-bottom: 12px;
+            background: rgba(0,0,0,0.25); border: 1px solid rgba(220,0,0,0.15);
+            border-radius: 10px; padding: 10px 12px; max-width: 420px; margin-left: auto; margin-right: auto;
+        }
+        .support-row { text-align: center; color: #cc8080; font-size: 13px; margin-bottom: 14px; }
+        .support-row a { color: #ffb1b1; text-decoration: none; }
+        .support-row a:hover { color: #ff4d4d; }
+        .legal-row {
+            text-align: center; color: #cc8080; font-size: 12px;
+            display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
+        }
+        .legal-row a { color: #ffb1b1; text-decoration: none; }
+        .legal-row a:hover { color: #ff4d4d; }
+        .lang-switch {
+            position: fixed; top: 14px; right: 16px; z-index: 50;
+            display: inline-flex; background: rgba(0,0,0,0.45); border: 1px solid rgba(220,0,0,0.25);
+            border-radius: 10px; overflow: hidden;
+        }
+        .lang-switch button {
+            background: transparent; border: none; color: #ffb1b1; padding: 8px 12px;
+            font-size: 12px; font-weight: 700; cursor: pointer; color: #fff;
+        }
+        .lang-switch button.active { background: rgba(220,0,0,0.35); color: #fff; }
+        .hidden { display: none !important; }
+        @media (max-width: 760px) {
+            .features { grid-template-columns: 1fr; }
+            .login-header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
 </head>
 <body>
-    <div class="auth-container">
-        <a href="../index.html" class="auth-back" style="display:none;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M15 18l-6-6 6-6"></path>
+    <div class="lang-switch">
+        <button id="langDe" class="active">DE</button>
+        <button id="langEn">EN</button>
+    </div>
+
+    <div class="login-page">
+        <div class="login-header">
+            <div class="discord-badge">
+                <svg viewBox="0 0 71 55" fill="currentColor" aria-hidden="true">
+                    <path d="M60.1045 4.8978C55.5792 2.8214 50.7265 1.2916 45.6527 0.41542C45.5603 0.39851 45.468 0.440769 45.4204 0.525289C44.7963 1.6353 44.105 3.0834 43.6209 4.2216C38.1637 3.4046 32.7345 3.4046 27.3892 4.2216C26.905 3.0581 26.1886 1.6353 25.5617 0.525289C25.5141 0.443589 25.4218 0.40133 25.3294 0.41542C20.2584 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005 45.4562 0.335386 45.5182 0.385761 45.5576C6.45866 50.0174 12.3413 52.7249 18.1147 54.5195C18.2071 54.5477 18.305 54.5139 18.3638 54.4378C19.7295 52.5728 20.9469 50.6063 21.9907 48.5383C22.0523 48.4172 21.9935 48.2735 48.9718 48.5383C50.038 50.6034 51.2554 52.5699 52.5959 54.435C52.6519 54.5139 52.7526 54.5477 52.845 54.5195C58.6464 52.7249 64.529 50.0174 70.6019 45.5576C70.6551 45.5182 70.6887 45.459 70.6943 45.3942C72.1747 30.0791 68.2147 16.7757 60.1968 4.9823C60.1772 4.9429 60.1437 4.9147 60.1045 4.8978ZM23.7259 37.3253C20.2276 37.3253 17.3451 34.1136 17.3451 30.1693C17.3451 26.225 20.1717 23.0133 23.7259 23.0133C27.3087 23.0133 30.1353 26.2532 30.1067 30.1693C30.1067 34.1136 27.2801 37.3253 23.7259 37.3253ZM47.3178 37.3253C43.8196 37.3253 40.9371 34.1136 40.9371 30.1693C40.9371 26.225 43.7636 23.0133 47.3178 23.0133C50.9006 23.0133 53.7272 26.2532 53.6986 30.1693C53.6986 34.1136 50.9006 37.3253 47.3178 37.3253Z"/>
+                </svg>
+                <span>OAuth2 · Discord</span>
+            </div>
+            <div>
+                <div class="welcome-title" data-i18n="welcome">Welcome back</div>
+                <div class="welcome-text" data-i18n="welcome_desc">Connect your Discord account to manage bots, claim rewards, and get support.</div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-box">
+                <h3 data-i18n="f1_title">Secure sign-in with Discord (OAuth2)</h3>
+                <p data-i18n="f1_desc">Fast, passwordless login tied to your Discord identity.</p>
+            </div>
+            <div class="feature-box">
+                <h3 data-i18n="f2_title">Dashboard, stats & daily rewards</h3>
+                <p data-i18n="f2_desc">Track usage, unlock perks, and claim your daily rewards.</p>
+            </div>
+            <div class="feature-box">
+                <h3 data-i18n="f3_title">Start, stop and monitor your bots</h3>
+                <p data-i18n="f3_desc">Control and monitor your bots in one place.</p>
+            </div>
+        </div>
+
+        <button type="button" class="discord-main-btn" id="discordLoginBtn">
+            <svg viewBox="0 0 71 55" fill="currentColor" aria-hidden="true">
+                <path d="M60.1045 4.8978C55.5792 2.8214 50.7265 1.2916 45.6527 0.41542C45.5603 0.39851 45.468 0.440769 45.4204 0.525289C44.7963 1.6353 44.105 3.0834 43.6209 4.2216C38.1637 3.4046 32.7345 3.4046 27.3892 4.2216C26.905 3.0581 26.1886 1.6353 25.5617 0.525289C25.5141 0.443589 25.4218 0.40133 25.3294 0.41542C20.2584 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005 45.4562 0.335386 45.5182 0.385761 45.5576C6.45866 50.0174 12.3413 52.7249 18.1147 54.5195C18.2071 54.5477 18.305 54.5139 18.3638 54.4378C19.7295 52.5728 20.9469 50.6063 21.9907 48.5383C22.0523 48.4172 21.9935 48.2735 48.9718 48.5383C50.038 50.6034 51.2554 52.5699 52.5959 54.435C52.6519 54.5139 52.7526 54.5477 52.845 54.5195C58.6464 52.7249 64.529 50.0174 70.6019 45.5576C70.6551 45.5182 70.6887 45.459 70.6943 45.3942C72.1747 30.0791 68.2147 16.7757 60.1968 4.9823C60.1772 4.9429 60.1437 4.9147 60.1045 4.8978ZM23.7259 37.3253C20.2276 37.3253 17.3451 34.1136 17.3451 30.1693C17.3451 26.225 20.1717 23.0133 23.7259 23.0133C27.3087 23.0133 30.1353 26.2532 30.1067 30.1693C27.2801 37.3253 23.7259 37.3253ZM47.3178 37.3253C43.8196 37.3253 40.9371 34.1136 40.9371 30.1693C40.9371 26.225 43.7636 23.0133 47.3178 23.0133C50.9006 23.0133 53.7272 26.2532 53.6986 30.1693C53.6986 34.1136 50.9006 37.3253 47.3178 37.3253Z"/>
             </svg>
-            Back to Store
-        </a>
+            <span data-i18n="continue_btn">Continue with Discord</span>
+        </button>
 
-        <div class="auth-card">
-            <img src="../images/main/r_l_logo_1.webp" alt="Logo" class="auth-logo" onerror="this.style.display='none'">
-            <h1 class="auth-title">UCHIHA - Labs©</h1>
-            <p class="auth-subtitle">Welcome to the future of digital products</p>
+        <div class="redirect-hint" data-i18n="redirect_hint">
+            Weiterleitung zu Discord…<br>
+            Sicherheitsprüfung abschließen — du wirst danach automatisch zu Discord weitergeleitet.
+        </div>
 
-            <div class="auth-tabs" style="display:none;">
-                <div id="authTabIndicator"></div>
-            </div>
+        <div class="support-row">
+            <span data-i18n="need_help">Need help?</span> <a href="https://discord.gg/mMEpN8k9bX" target="_blank" rel="noopener">Join support</a>
+        </div>
 
-            <div id="authPublicNotice" class="auth-public-notice" style="display:none;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                <div>
-                    <strong>Backend runs locally.</strong>
-                    <span>To log in or create an account, please use the <a href="../index.html">UCHIHA Launcher desktop app</a> (click "Download Launcher" in the sidebar). The public website is read-only.</span>
-                </div>
-                <button type="button" class="auth-public-notice-close" aria-label="Dismiss">&times;</button>
-            </div>
-
-            <div style="text-align:center; padding: 20px 0;">
-                <button type="button" class="auth-btn-discord" id="discordLoginBtn" style="max-width: 320px; width: 100%; margin: 0 auto; display: inline-flex;">
-                    <svg viewBox="0 0 71 55" fill="currentColor" aria-hidden="true">
-                        <path d="M60.1045 4.8978C55.5792 2.8214 50.7265 1.2916 45.6527 0.41542C45.5603 0.39851 45.468 0.440769 45.4204 0.525289C44.7963 1.6353 44.105 3.0834 43.6209 4.2216C26.905 3.0581 26.1886 1.6353 25.5617 0.525289C25.5141 0.443589 25.4218 0.40133 25.3294 0.41542C20.2584 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005 45.4562 0.335386 45.5182 0.385761 45.5576C6.45866 50.0174 12.3413 52.7249 18.1147 54.5195C18.2071 54.5477 18.305 54.5139 18.3638 54.4378C19.7295 52.5728 20.9469 50.6063 21.9907 48.5383C22.0523 48.4172 21.9935 48.2735 48.9718 48.5383C50.038 50.6034 51.2554 52.5699 52.5959 54.435C52.6519 54.5139 52.7526 54.5477 52.845 54.5195C58.6464 52.7249 64.529 50.0174 70.6019 45.5576C70.6551 45.5182 70.6887 45.459 70.6943 45.3942C72.1747 30.0791 68.2147 16.7757 60.1968 4.9823C60.1772 4.9429 60.1437 4.9147 60.1045 4.8978ZM23.7259 37.3253C20.2276 37.3253 17.3451 34.1136 17.3451 30.1693C17.3451 26.225 20.1717 23.0133 23.7259 23.0133C27.3087 23.0133 30.1353 26.2532 30.1067 30.1693C30.1067 34.1136 27.2801 37.3253 23.7259 37.3253ZM47.3178 37.3253C43.8196 37.3253 40.9371 34.1136 40.9371 30.1693C40.9371 26.225 43.7636 23.0133 47.3178 23.0133C50.9006 23.0133 53.7272 26.2532 53.6986 30.1693C53.6986 34.1136 50.9006 37.3253 47.3178 37.3253Z"/>
-                    </svg>
-                    Continue with Discord
-                </button>
-            </div>
+        <div class="legal-row">
+            <span data-i18n="agree_text">By signing in you agree to our</span>
+            <a href="../sites/terms.html" target="_blank" rel="noopener">Terms</a>
+            <span>&</span>
+            <a href="../sites/privacy.html" target="_blank" rel="noopener">Privacy</a>
         </div>
     </div>
 
 <script src="../js/main.js"></script>
     <script>
     (function() {
+        const translations = {
+            de: {
+                welcome: 'Willkommen zurück',
+                welcome_desc: 'Verbinde dein Discord-Konto, um Bots zu verwalten, Rewards zu sammeln und Support zu erhalten.',
+                f1_title: 'Sicheres Login mit Discord (OAuth2)',
+                f1_desc: 'Schnelles, passwortloses Login über deine Discord-Identität.',
+                f2_title: 'Dashboard, Statistiken & Daily Rewards',
+                f2_desc: 'Nutzung verfolgen, Vorteile freischalten und tägliche Belohnungen abholen.',
+                f3_title: 'Starte, stoppe und überwache deine Bots',
+                f3_desc: 'Verwalte und überwache deine Bots an einem Ort.',
+                continue_btn: 'Mit Discord fortfahren',
+                redirect_hint: 'Weiterleitung zu Discord…<br>Sicherheitsprüfung abschließen — du wirst danach automatisch zu Discord weitergeleitet.',
+                need_help: 'Hilfe benötigt?',
+                agree_text: 'Mit dem Einloggen stimmst du unseren',
+                terms: 'AGB',
+                privacy: 'Datenschutz'
+            },
+            en: {
+                welcome: 'Welcome back',
+                welcome_desc: 'Connect your Discord account to manage bots, claim rewards, and get support.',
+                f1_title: 'Secure sign-in with Discord (OAuth2)',
+                f1_desc: 'Fast, passwordless login tied to your Discord identity.',
+                f2_title: 'Dashboard, stats & daily rewards',
+                f2_desc: 'Track usage, unlock perks, and claim your daily rewards.',
+                f3_title: 'Start, stop and monitor your bots',
+                f3_desc: 'Control and monitor your bots in one place.',
+                continue_btn: 'Continue with Discord',
+                redirect_hint: 'Redirecting to Discord…<br>Complete the security check — you will be redirected to Discord automatically.',
+                need_help: 'Need help?',
+                agree_text: 'By signing in you agree to our',
+                terms: 'Terms',
+                privacy: 'Privacy'
+            }
+        };
+
+        function applyLang(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(function(el) {
+                var key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+            document.documentElement.lang = lang;
+            try { localStorage.setItem('uchiha_lang', lang); } catch(e) {}
+        }
+
+        document.getElementById('langDe').addEventListener('click', function() {
+            document.getElementById('langDe').classList.add('active');
+            document.getElementById('langEn').classList.remove('active');
+            applyLang('de');
+        });
+        document.getElementById('langEn').addEventListener('click', function() {
+            document.getElementById('langEn').classList.add('active');
+            document.getElementById('langDe').classList.remove('active');
+            applyLang('en');
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             var discordBtn = document.getElementById('discordLoginBtn');
             if (discordBtn) {
@@ -59,9 +198,19 @@
                     window.location.href = 'https://uchiha-backend-d1n7.onrender.com/api/auth/discord?return_to=' + returnTo;
                 });
             }
+
+            var saved = (localStorage.getItem('uchiha_lang') || 'de').toLowerCase();
+            if (saved === 'en') {
+                document.getElementById('langEn').classList.add('active');
+                document.getElementById('langDe').classList.remove('active');
+                applyLang('en');
+            } else {
+                document.getElementById('langDe').classList.add('active');
+                document.getElementById('langEn').classList.remove('active');
+                applyLang('de');
+            }
         });
     })();
     </script>
 </body>
-
 </html>
