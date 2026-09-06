@@ -4059,7 +4059,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             window.history.replaceState({}, '', newUrl);
             if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
             console.log('[auth] Discord login success, redirecting to /');
-            window.location.href = '/';
+            window.location.replace('/');
+            return;
         }
         if (authError) {
             if (typeof showBanner === 'function') showBanner('Discord sign-in failed: ' + authError, 'error');
