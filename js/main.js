@@ -3281,6 +3281,8 @@ function getProductImageUrl(url) {
     if (!url || !url.trim()) return url;
     var trimmed = url.trim();
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    if (trimmed.startsWith('/api/uploads/')) return trimmed;
+    if (trimmed.startsWith('uploads/')) return '/api/' + trimmed;
     var ext = trimmed.split('.').pop().toLowerCase();
     if (ext === 'gif') return trimmed;
     if (trimmed === '' || trimmed.endsWith('/')) return trimmed;

@@ -24,14 +24,22 @@
     async function adminFetch(path, options) {
         options = options || {};
         const token = getToken();
-        const headers = Object.assign({}, options.headers || {}, { 'Content-Type': 'application/json' });
+        const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+        const headers = Object.assign({}, options.headers || {});
         if (token) headers['Authorization'] = 'Bearer ' + token;
+        if (!isFormData && !headers['Content-Type']) {
+            headers['Content-Type'] = 'application/json';
+        }
         const res = await fetch(apiUrlFallback(ADMIN_API + path), Object.assign({}, options, { headers }));
         if (!res.ok) {
             const body = await res.text();
             throw new Error(res.status + ': ' + (body || res.statusText));
         }
-        return res.json();
+        try {
+            return await res.json();
+        } catch (e) {
+            return {};
+        }
     }
 
     function banner(msg, type) {
@@ -704,8 +712,11 @@
                 const fd = new FormData();
                 fd.append('file', fileInput.files[0]);
                 if (id) fd.append('product_id', id);
-                const res = await fetch(adminFetch('/products/' + (id || 'new') + '/upload_file', { method: 'POST', body: fd }));
-                if (!res.ok) throw new Error('File upload failed');
+                const uploadRes = await adminFetch('/products/' + (id || 'new') + '/upload_file', { method: 'POST', body: fd });
+                const imageUrlField = form.querySelector('input[name="image_url"]');
+                if (imageUrlField && uploadRes && uploadRes.path) {
+                    imageUrlField.value = uploadRes.path;
+                }
             }
             const data = collectForm(form);
             if (id) await adminFetch('/products/' + id + '/update', { method: 'POST', body: JSON.stringify(data) });
