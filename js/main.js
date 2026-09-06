@@ -1966,7 +1966,7 @@ function renderCustomerPanelContent() {
     var profileHtml =
         '<div class="cp-profile-card glass-card">' +
             '<div class="cp-profile-left">' +
-                '<img src="' + escHtml(fullUser.profile_picture || '') + '" alt="" class="cp-profile-img" onerror="this.style.display=\'none\'">' +
+                '<img src="' + escHtml(profilePicUrl(fullUser.profile_picture)) + '" alt="" class="cp-profile-img" onerror="this.style.display=\'none\'">' +
                 '<div class="cp-profile-info">' +
                     '<div class="cp-profile-username-row">' +
                         '<div class="cp-profile-username" style="color:' + escHtml((config && config.default_name_color) ? config.default_name_color : '#ffffff') + ';">' + escHtml(fullUser.username || 'Unknown') + '</div>' +
