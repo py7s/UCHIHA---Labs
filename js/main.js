@@ -1042,6 +1042,9 @@ function applyConfigVisibility() {
         var enabled = raw !== false && String(raw) !== 'false';
         el.classList.remove('cfg-gated');
         el.style.display = enabled ? cfgGatedDisplayValue(el) : 'none';
+        if (key === 'lab_pass_tab' || key === 'partner_tab' || key === 'github_page' || key === 'q_and_a_tab') {
+            console.log('[cfg] ' + key + ' raw=' + JSON.stringify(raw) + ' enabled=' + enabled + ' display=' + el.style.display);
+        }
     });
 }
 
