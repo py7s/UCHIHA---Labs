@@ -1039,10 +1039,8 @@ function applyConfigVisibility() {
     gatedEls.forEach(function(el) {
         var key = el.getAttribute('data-cfg-key');
         var enabled = config[key] !== false;
-        var requiredPermission = config[key + '_required_permissions'];
-        var allowed = enabled && meetsRequiredPermission(requiredPermission);
         el.classList.remove('cfg-gated');
-        el.style.display = allowed ? cfgGatedDisplayValue(el) : 'none';
+        el.style.display = enabled ? cfgGatedDisplayValue(el) : 'none';
     });
 }
 
