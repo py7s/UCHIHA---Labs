@@ -1131,8 +1131,9 @@ async function checkLoginStatus() {
             if (authButtons) authButtons.style.display = 'none';
             if (userProfileBtn) userProfileBtn.style.display = 'flex';
             if (window.location.pathname.includes('login_register')) {
-                console.log('[auth] On login page, redirecting to /');
-                window.location.href = '/index.html';
+                console.log('[auth] On login page with valid token, redirecting to /');
+                window.location.replace('/');
+                return;
             }
             return;
         } catch(e) {
