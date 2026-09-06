@@ -4046,11 +4046,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, '', newUrl);
             if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
-            if (window.uchihaLauncher && window.uchihaLauncher.isDesktop) {
-                setTimeout(function() {
-                    window.location.href = '/index.html';
-                }, 800);
-            }
+            setTimeout(function() {
+                window.location.href = '/index.html';
+            }, 500);
         }
         if (authError) {
             if (typeof showBanner === 'function') showBanner('Discord sign-in failed: ' + authError, 'error');
