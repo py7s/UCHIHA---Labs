@@ -1195,9 +1195,8 @@ function updateUserProfile(user) {
         } else {
             profileSrc = pp;
         }
-    } else if (user.discord_avatar) {
-        // Show the Discord avatar as a fallback when no custom picture exists.
-        profileSrc = user.discord_avatar;
+    } else if (user.discord_avatar && user.discord_user_id) {
+        profileSrc = 'https://cdn.discordapp.com/avatars/' + encodeURIComponent(user.discord_user_id) + '/' + encodeURIComponent(user.discord_avatar) + '.png';
     } else if (user.username) {
         profileSrc = './images/' + user.username + '/' + user.username + '.png';
     }
