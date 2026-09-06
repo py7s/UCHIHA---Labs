@@ -1038,7 +1038,8 @@ function applyConfigVisibility() {
     var gatedEls = document.querySelectorAll('.cfg-gated[data-cfg-key]');
     gatedEls.forEach(function(el) {
         var key = el.getAttribute('data-cfg-key');
-        var enabled = config[key] !== false;
+        var raw = config[key];
+        var enabled = raw !== false && String(raw) !== 'false';
         el.classList.remove('cfg-gated');
         el.style.display = enabled ? cfgGatedDisplayValue(el) : 'none';
     });
