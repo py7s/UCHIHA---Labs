@@ -1068,11 +1068,12 @@ async function fetchFullUser(token) {
         var res = await fetch(apiUrl('/api/user'), {
             headers: { 'Authorization': 'Bearer ' + token }
         });
+        console.log('[auth] /api/user response status:', res.status);
         if (res.ok) {
             var data = await res.json();
             return data.account || data;
         }
-    } catch(e) {}
+    } catch(e) { console.error('[auth] fetchFullUser error:', e); }
     return null;
 }
 
@@ -1100,9 +1101,11 @@ async function checkLoginStatus() {
     var authButtons = document.getElementById('authButtons');
     var userProfileBtn = document.getElementById('userProfileBtn');
     var token = sessionStorage.getItem('uchiha_token');
+    console.log('[auth] checkLoginStatus called, token present:', !!token);
     if (token) {
         try {
             var fullUser = await fetchFullUser(token);
+            console.log('[auth] fetchFullUser result:', fullUser ? 'found' : 'null');
             if (fullUser) {
                 sessionStorage.setItem('uchiha_user', JSON.stringify(fullUser));
                 currentUser = fullUser;
@@ -1118,7 +1121,9 @@ async function checkLoginStatus() {
                     }
                     currentUser = mergedUser;
                     updateUserProfile(mergedUser);
+                    console.log('[auth] Using JWT payload for user:', mergedUser.username);
                 } else {
+                    console.log('[auth] Invalid token format, removing');
                     sessionStorage.removeItem('uchiha_token');
                     currentUser = null;
                 }
@@ -1126,16 +1131,19 @@ async function checkLoginStatus() {
             if (authButtons) authButtons.style.display = 'none';
             if (userProfileBtn) userProfileBtn.style.display = 'flex';
             if (window.location.pathname.includes('login_register')) {
+                console.log('[auth] On login page, redirecting to /');
                 window.location.href = '/index.html';
             }
             return;
         } catch(e) {
+            console.error('[auth] checkLoginStatus error:', e);
             sessionStorage.removeItem('uchiha_token');
         }
     }
     currentUser = null;
     if (authButtons) authButtons.style.display = 'flex';
     if (userProfileBtn) userProfileBtn.style.display = 'none';
+    console.log('[auth] No token found, showing auth buttons');
 }
 
 function getAccountTypeBadgeStyle(accountType) {
@@ -4030,6 +4038,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         var discordAccountParam = params.get('discord_account');
         var authError = params.get('auth_error');
         if (discordToken) {
+            console.log('[auth] Discord token found in URL, saving to sessionStorage');
             sessionStorage.setItem('uchiha_token', discordToken);
             if (discordAccountParam) {
                 try {
@@ -4039,16 +4048,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                     if (window.uchihaLauncher && window.uchihaLauncher.setAuth) {
                         window.uchihaLauncher.setAuth({ token: discordToken, user: acc });
                     }
-                } catch(e) {}
+                    console.log('[auth] Discord account saved:', acc.username || acc.id);
+                } catch(e) { console.error('[auth] Failed to parse discord_account', e); }
             }
             params.delete('discord_token');
             params.delete('discord_account');
             var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, '', newUrl);
             if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
-            setTimeout(function() {
-                window.location.href = '/index.html';
-            }, 500);
+            console.log('[auth] Discord login success, redirecting to /');
+            window.location.href = '/';
         }
         if (authError) {
             if (typeof showBanner === 'function') showBanner('Discord sign-in failed: ' + authError, 'error');
