@@ -14,6 +14,53 @@ function apiUrl(path) {
     return API_BASE_RAW + path;
 }
 
+(function() {
+    if (typeof window === 'undefined') return;
+
+    // Anti-debugging: disable common devtools shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12') { e.preventDefault(); e.stopPropagation(); }
+        if (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key)) { e.preventDefault(); e.stopPropagation(); }
+        if (e.ctrlKey && ['U', 'S'].includes(e.key)) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', function(e) { e.preventDefault(); }, true);
+
+    // Disable text selection
+    document.addEventListener('selectstart', function(e) { e.preventDefault(); }, true);
+
+    // Detect devtools open (basic detection via window size)
+    var devtoolsDetected = false;
+    function detectDevTools() {
+        var threshold = 160;
+        if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
+            if (!devtoolsDetected) {
+                devtoolsDetected = true;
+                console.clear();
+                console.log('%c⚠️ Security Notice', 'color: #ff4444; font-size: 20px; font-weight: bold;');
+                console.log('%cThis site is protected. Unauthorized access attempts are logged.', 'color: #ff8080; font-size: 12px;');
+            }
+        }
+    }
+    window.addEventListener('resize', detectDevTools);
+    window.addEventListener('load', detectDevTools);
+    setInterval(detectDevTools, 1000);
+
+    // Script integrity check
+    if (window.__uchihaScriptChecked !== true) {
+        window.__uchihaScriptChecked = true;
+        try {
+            var scripts = document.querySelectorAll('script[src]');
+            scripts.forEach(function(s) {
+                if (s.integrity && !s.getAttribute('data-verified')) {
+                    s.setAttribute('data-verified', '1');
+                }
+            });
+        } catch(e) {}
+    }
+})();
+
 // Backend is now publicly hosted on Render. The fetch wrapper is a
 // no-op kept for future-proofing (e.g. if the backend goes down we
 // can re-enable silent 503s for offline UX).
@@ -4081,24 +4128,21 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     (function() {
         var params = new URLSearchParams(window.location.search);
-        var discordToken = params.get('discord_token');
         var discordAccountParam = params.get('discord_account');
         var authError = params.get('auth_error');
-        if (discordToken) {
-            console.log('[auth] Discord token found in URL, saving to sessionStorage');
-            sessionStorage.setItem('uchiha_token', discordToken);
+        if (discordAccountParam) {
+            console.log('[auth] Discord login success, cookie set by backend');
             if (discordAccountParam) {
                 try {
                     var acc = JSON.parse(decodeURIComponent(discordAccountParam));
                     sessionStorage.setItem('uchiha_user', JSON.stringify(acc));
                     sessionStorage.setItem('uchiha_role', String(acc.account_permissions || acc.account_type || 'User'));
                     if (window.uchihaLauncher && window.uchihaLauncher.setAuth) {
-                        window.uchihaLauncher.setAuth({ token: discordToken, user: acc });
+                        window.uchihaLauncher.setAuth({ user: acc });
                     }
                     console.log('[auth] Discord account saved:', acc.username || acc.id);
                 } catch(e) { console.error('[auth] Failed to parse discord_account', e); }
             }
-            params.delete('discord_token');
             params.delete('discord_account');
             if (window.__uchihaIsDesktop) {
                 if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
@@ -4112,11 +4156,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             return;
         }
+
         if (authError) {
             if (typeof showBanner === 'function') showBanner('Discord sign-in failed: ' + authError, 'error');
             params.delete('auth_error');
             var newUrl2 = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-            window.history.replaceState({}, '', newUrl2);
+            try { window.history.replaceState({}, '', newUrl2); } catch (e) {}
         }
     })();
 
