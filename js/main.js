@@ -3,6 +3,11 @@
 const API_BASE_RAW = 'https://uchiha-backend-d1n7.onrender.com';
 const CF_WORKER = API_BASE_RAW;
 const isElectron = !!(window.uchihaLauncher && window.uchihaLauncher.isDesktop);
+// Very early desktop flag: the desktop launcher shim further down runs after
+// the Discord token check below, so we must know "am I inside the app" from
+// the very first script tick. Otherwise the auth-redirect would go to the
+// remote site instead of the local index.
+if (isElectron) window.__uchihaIsDesktop = true;
 const isHttps = window.location.protocol === 'https:';
 const isPublicHttps = isHttps && !isElectron;
 function apiUrl(path) {
@@ -1157,8 +1162,9 @@ function getAccountTypeBadgeStyle(accountType) {
 
 function updateUserProfile(user) {
     var nameColor = (config && config.default_name_color) ? config.default_name_color : '#ffffff';
+    var displayName = user.display_username || user.username || 'Guest';
     document.querySelectorAll('#usernameDisplay, #usernameDisplaySidebar, .cp-profile-username').forEach(function(el) {
-        el.textContent = user.username || 'Guest';
+        el.textContent = displayName;
         el.style.color = nameColor;
     });
     document.querySelectorAll('#userTypeSidebar').forEach(function(el) {
@@ -4021,13 +4027,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (window.uchihaLauncher && window.uchihaLauncher.onDiscordAuthCallback) {
         window.uchihaLauncher.onDiscordAuthCallback(function(data) {
             if (data && data.token) {
-                sessionStorage.setItem('uchiha_token', data.token);
+                try { sessionStorage.setItem('uchiha_token', data.token); } catch (e) {}
                 if (data.account) {
                     try { sessionStorage.setItem('uchiha_user', JSON.stringify(data.account)); } catch(e) {}
                 }
+                try { sessionStorage.removeItem('uchiha_role'); } catch (e) {}
                 if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
                 setTimeout(function() {
-                    window.location.href = '/index.html';
+                    try {
+                        window.location.href = (window.__uchihaIsDesktop ? './index.html' : '/index.html');
+                    } catch (e) {
+                        try { window.location.replace(window.__uchihaIsDesktop ? './index.html' : '/index.html'); } catch (e2) {}
+                    }
                 }, 800);
             }
         });
@@ -4054,11 +4065,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             params.delete('discord_token');
             params.delete('discord_account');
-            var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-            window.history.replaceState({}, '', newUrl);
-            if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
-            console.log('[auth] Discord login success, redirecting to /');
-            window.location.replace('/');
+            if (window.__uchihaIsDesktop) {
+                if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
+                window.location.replace('./index.html');
+            } else {
+                var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+                try { window.history.replaceState({}, '', newUrl); } catch (e) {}
+                if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
+                console.log('[auth] Discord login success, redirecting to /');
+                window.location.replace('/');
+            }
             return;
         }
         if (authError) {
@@ -4090,6 +4106,33 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (dlBtn) dlBtn.style.display = 'none';
             var dlStatus = document.getElementById('downloadStatus');
             if (dlStatus) dlStatus.style.display = 'none';
+        } catch (e) {}
+
+        // Restore a persisted session (e.g. from a previous Discord login)
+        // that the desktop launcher stored on disk for us.
+        try {
+            if (window.uchihaLauncher && window.uchihaLauncher.getInfo && !sessionStorage.getItem('uchiha_token')) {
+                window.uchihaLauncher.getInfo().then(function(info) {
+                    if (!info || !info.token || !info.user) {
+                        // No saved session -> behave like the website: show the login page.
+                        try {
+                            if (window.__uchihaIsDesktop && window.location.href.indexOf('login_register.html') < 0) {
+                                window.location.href = './sites/login_register.html';
+                            }
+                        } catch (e3) {}
+                        return;
+                    }
+                    sessionStorage.setItem('uchiha_token', info.token);
+                    try { sessionStorage.setItem('uchiha_user', JSON.stringify(info.user)); } catch (e2) {}
+                    sessionStorage.setItem('uchiha_role', String(info.user.account_permissions || info.user.account_type || 'User'));
+                    var href = window.location.href || '';
+                    if (href.indexOf('login_register.html') >= 0 || href.indexOf('index.html') < 0) {
+                        window.location.href = './index.html';
+                    } else {
+                        window.location.reload();
+                    }
+                }).catch(function() {});
+            }
         } catch (e) {}
     })();
 

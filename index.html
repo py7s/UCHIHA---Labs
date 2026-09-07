@@ -509,6 +509,11 @@
         (function() {
             var params = new URLSearchParams(window.location.search);
             if (params.get('discord_token')) return;
+            // Desktop launcher: the session is restored asynchronously by
+            // js/main.js (launcher-settings.json -> sessionStorage). Redirecting
+            // immediately here would race the restore and bounce the user to
+            // the login page instead of the index.
+            if (window.uchihaLauncher && window.uchihaLauncher.isDesktop) return;
             if (!sessionStorage.getItem('uchiha_token')) {
                 window.location.href = './sites/login_register.html';
             }
