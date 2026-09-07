@@ -1145,10 +1145,10 @@ function applyConfigDefaults() {
     }
 }
 
-async function fetchFullUser(token) {
+async function fetchFullUser() {
     try {
         var res = await fetch(apiUrl('/api/user'), {
-            headers: { 'Authorization': 'Bearer ' + token }
+            credentials: 'include'
         });
         console.log('[auth] /api/user response status:', res.status);
         if (res.ok) {
@@ -1276,17 +1276,41 @@ function showHardwareVerificationModal(data) {
 async function checkLoginStatus() {
     var authButtons = document.getElementById('authButtons');
     var userProfileBtn = document.getElementById('userProfileBtn');
+    console.log('[auth] checkLoginStatus called');
+    
+    try {
+        var fullUser = await fetchFullUser();
+        console.log('[auth] fetchFullUser result:', fullUser ? 'found' : 'null');
+        if (fullUser) {
+            sessionStorage.setItem('uchiha_user', JSON.stringify(fullUser));
+            currentUser = fullUser;
+            window.__uchihaCurrentUser = fullUser;
+            updateUserProfile(fullUser);
+            applyAllGating();
+            if (authButtons) authButtons.style.display = 'none';
+            if (userProfileBtn) userProfileBtn.style.display = 'flex';
+            if (window.location.pathname.includes('login_register')) {
+                console.log('[auth] On login page with valid cookie, redirecting to /');
+                window.location.replace('/');
+                return;
+            }
+            if (!sessionStorage.getItem('uchiha_hardware_bound')) {
+                setTimeout(function() { ensureHardwareBound(); }, 2000);
+            }
+            return;
+        }
+    } catch(e) { console.error('[auth] checkLoginStatus error:', e); }
+    
     var token = sessionStorage.getItem('uchiha_token');
-    console.log('[auth] checkLoginStatus called, token present:', !!token);
     if (token) {
         try {
-            var fullUser = await fetchFullUser(token);
-            console.log('[auth] fetchFullUser result:', fullUser ? 'found' : 'null');
-            if (fullUser) {
-                sessionStorage.setItem('uchiha_user', JSON.stringify(fullUser));
-                currentUser = fullUser;
-                window.__uchihaCurrentUser = fullUser;
-                updateUserProfile(fullUser);
+            var fullUser2 = await fetchFullUser();
+            console.log('[auth] fetchFullUser result:', fullUser2 ? 'found' : 'null');
+            if (fullUser2) {
+                sessionStorage.setItem('uchiha_user', JSON.stringify(fullUser2));
+                currentUser = fullUser2;
+                window.__uchihaCurrentUser = fullUser2;
+                updateUserProfile(fullUser2);
                 applyAllGating();
             } else {
                 var parts = token.split('.');
