@@ -23,14 +23,12 @@
 
     async function adminFetch(path, options) {
         options = options || {};
-        const token = getToken();
         const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
         const headers = Object.assign({}, options.headers || {});
-        if (token) headers['Authorization'] = 'Bearer ' + token;
         if (!isFormData && !headers['Content-Type']) {
             headers['Content-Type'] = 'application/json';
         }
-        const res = await fetch(apiUrlFallback(ADMIN_API + path), Object.assign({}, options, { headers }));
+        const res = await fetch(apiUrlFallback(ADMIN_API + path), Object.assign({}, options, { headers, credentials: 'include' }));
         if (!res.ok) {
             const body = await res.text();
             throw new Error(res.status + ': ' + (body || res.statusText));
@@ -95,6 +93,7 @@
             coupons: 'Coupons', bank: 'Bank Packs', orders: 'Orders',
             forum: 'Forum', settings: 'Settings', audit: 'Audit Log',
             news: 'News', qa: 'Q&A', partners: 'Partners', launcher: 'Launcher',
+            maintenance: 'Maintenance', hardware: 'Hardware Verifications',
         };
         if (titleEl) titleEl.textContent = labels[name] || name;
     }
@@ -1011,6 +1010,7 @@
                 if (tab === 'launcher') loadLauncherAdmin();
                 if (tab === 'maintenance') loadGlobalMaintenanceAdmin();
                 if (tab === 'audit') loadAudit();
+                if (tab === 'hardware') loadHardwareVerifications();
             });
         });
 
@@ -1087,6 +1087,54 @@
         bindActions();
         showSection('dashboard');
         loadDashboard();
+    }
+
+    async function loadHardwareVerifications() {
+        try {
+            const data = await adminFetch('/hardware/verifications');
+            const tbody = document.querySelector('#hardwareVerificationsTable tbody');
+            if (!tbody) return;
+            const rows = (data.requests || []).map(r => {
+                const proof = r.proof_text ? '<a href="' + esc(r.proof_text) + '" target="_blank">Link</a>' : '—';
+                if (r.proof_image_url) proof += ' <a href="' + esc(r.proof_image_url) + '" target="_blank">IMG</a>';
+                return '<tr>' +
+                    '<td>' + r.id + '</td>' +
+                    '<td>' + esc(r.username || r.user_id) + '</td>' +
+                    '<td><span class="status-pill ' + (r.request_type === 'hardware_upgrade' ? 'active' : 'inactive') + '">' + esc(r.request_type) + '</span></td>' +
+                    '<td>' + esc(r.changed_component) + '</td>' +
+                    '<td>' + esc(r.old_value || '—') + '</td>' +
+                    '<td>' + esc(r.new_value || '—') + '</td>' +
+                    '<td>' + proof + '</td>' +
+                    '<td>' + fmtTime(r.created_at) + '</td>' +
+                    '<td>' +
+                    (r.status === 'pending' ?
+                        '<button class="admin-btn admin-btn-small admin-btn-primary" data-approve="' + r.id + '">Approve</button>' +
+                        '<button class="admin-btn admin-btn-small admin-btn-danger" data-reject="' + r.id + '">Reject</button>'
+                        : '<span class="status-pill ' + (r.status === 'approved' ? 'active' : 'inactive') + '">' + esc(r.status) + '</span>') +
+                    '</td>' +
+                '</tr>';
+            }).join('');
+            tbody.innerHTML = rows || '<tr><td colspan="9" style="text-align:center;color:#666;">No pending requests</td></tr>';
+
+            tbody.querySelectorAll('[data-approve]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-approve');
+                    await adminFetch('/hardware/verifications/' + id + '/approve', { method: 'POST' });
+                    banner('Verification approved', 'success');
+                    loadHardwareVerifications();
+                });
+            });
+            tbody.querySelectorAll('[data-reject]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-reject');
+                    await adminFetch('/hardware/verifications/' + id + '/reject', { method: 'POST' });
+                    banner('Verification rejected', 'error');
+                    loadHardwareVerifications();
+                });
+            });
+        } catch (e) {
+            banner('Failed to load hardware verifications: ' + e.message, 'error');
+        }
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
