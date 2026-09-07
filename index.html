@@ -512,6 +512,14 @@
 
     <script>
         (function() {
+            var hash = window.location.hash || '';
+            var tokenMatch = hash.match(/[?&]discord_token=([^&]+)/);
+            if (tokenMatch) {
+                try {
+                    sessionStorage.setItem('uchiha_token', decodeURIComponent(tokenMatch[1]));
+                    history.replaceState(null, '', window.location.pathname + window.location.search);
+                } catch(e) {}
+            }
             var params = new URLSearchParams(window.location.search);
             if (params.get('discord_token')) return;
             // Desktop launcher: the session is restored asynchronously by
