@@ -4249,8 +4249,38 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     (function() {
         var params = new URLSearchParams(window.location.search);
+        var discordToken = params.get('discord_token');
         var discordAccountParam = params.get('discord_account');
         var authError = params.get('auth_error');
+        if (discordToken) {
+            console.log('[auth] Discord token found in URL, saving to sessionStorage');
+            sessionStorage.setItem('uchiha_token', discordToken);
+            if (discordAccountParam) {
+                try {
+                    var acc = JSON.parse(decodeURIComponent(discordAccountParam));
+                    sessionStorage.setItem('uchiha_user', JSON.stringify(acc));
+                    sessionStorage.setItem('uchiha_role', String(acc.account_permissions || acc.account_type || 'User'));
+                    if (window.uchihaLauncher && window.uchihaLauncher.setAuth) {
+                        window.uchihaLauncher.setAuth({ token: discordToken, user: acc });
+                    }
+                    console.log('[auth] Discord account saved:', acc.username || acc.id);
+                } catch(e) { console.error('[auth] Failed to parse discord_account', e); }
+            }
+            params.delete('discord_token');
+            params.delete('discord_account');
+            if (window.__uchihaIsDesktop) {
+                if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
+                window.location.replace('./index.html');
+            } else {
+                var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+                try { window.history.replaceState({}, '', newUrl); } catch (e) {}
+                if (typeof showBanner === 'function') showBanner('Successfully signed in with Discord!', 'success');
+                console.log('[auth] Discord login success, redirecting to /');
+                window.location.replace('/');
+            }
+            return;
+        }
+
         if (discordAccountParam) {
             console.log('[auth] Discord login success, cookie set by backend');
             if (discordAccountParam) {
