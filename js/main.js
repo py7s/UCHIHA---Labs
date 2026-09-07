@@ -1038,6 +1038,37 @@ function cfgGatedDisplayValue(el) {
     return '';
 }
 
+var ROLE_RANK = { User: 0, Beta: 1, VIP: 2, Partner: 3, UnlockAll: 4, Admin: 5, Owner: 6 };
+
+function hasRole(user, requiredRole) {
+    if (!user || !requiredRole) return true;
+    var userRole = String(user.account_permissions || user.account_type || 'User');
+    var userRank = ROLE_RANK[userRole] !== undefined ? ROLE_RANK[userRole] : 0;
+    var requiredRank = ROLE_RANK[requiredRole] !== undefined ? ROLE_RANK[requiredRole] : 0;
+    return userRank >= requiredRank;
+}
+
+function applyRoleGating() {
+    var user = window.__uchihaCurrentUser || (window.uchihaLauncher && window.uchihaLauncher.getAuth && window.uchihaLauncher.getAuth().user) || null;
+    if (!user) return;
+    var gatedEls = document.querySelectorAll('[data-role]');
+    gatedEls.forEach(function(el) {
+        var required = el.getAttribute('data-role');
+        if (!required) return;
+        var visible = hasRole(user, required);
+        el.style.display = visible ? '' : 'none';
+    });
+}
+
+function applyAllGating() {
+    applyConfigVisibility();
+    applyRoleGating();
+    var dlBtn = document.getElementById('downloadLauncherBtn');
+    if (dlBtn && config && config.launcher_required_role) {
+        dlBtn.setAttribute('data-role', config.launcher_required_role);
+    }
+}
+
 function applyConfigVisibility() {
     if (!config) config = {};
     var gatedEls = document.querySelectorAll('.cfg-gated[data-cfg-key]');
@@ -1113,7 +1144,9 @@ async function checkLoginStatus() {
             if (fullUser) {
                 sessionStorage.setItem('uchiha_user', JSON.stringify(fullUser));
                 currentUser = fullUser;
+                window.__uchihaCurrentUser = fullUser;
                 updateUserProfile(fullUser);
+                applyAllGating();
             } else {
                 var parts = token.split('.');
                 if (parts.length === 3) {
@@ -1124,7 +1157,9 @@ async function checkLoginStatus() {
                         try { mergedUser = Object.assign({}, decoded, JSON.parse(stored)); } catch(e) {}
                     }
                     currentUser = mergedUser;
+                    window.__uchihaCurrentUser = mergedUser;
                     updateUserProfile(mergedUser);
+                    applyAllGating();
                     console.log('[auth] Using JWT payload for user:', mergedUser.username);
                 } else {
                     console.log('[auth] Invalid token format, removing');
@@ -4139,7 +4174,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     window.addEventListener('uchiha:admin-saved', function(e) {
         config = {};
         if (typeof loadConfig === 'function') loadConfig().then(function() {
-            if (typeof applyConfigVisibility === 'function') applyConfigVisibility();
+            if (typeof applyAllGating === 'function') applyAllGating();
             if (typeof applyConfigDefaults === 'function') applyConfigDefaults();
             if (typeof checkGlobalMaintenance === 'function') checkGlobalMaintenance();
         });
@@ -4152,11 +4187,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     window.addEventListener('storage', function(e) {
         if (e.key === 'uchiha_admin_saved_ts') {
             config = {};
-            if (typeof loadConfig === 'function') loadConfig().then(function() {
-                if (typeof applyConfigVisibility === 'function') applyConfigVisibility();
-                if (typeof applyConfigDefaults === 'function') applyConfigDefaults();
-                if (typeof checkGlobalMaintenance === 'function') checkGlobalMaintenance();
-            });
+        if (typeof loadConfig === 'function') loadConfig().then(function() {
+            if (typeof applyAllGating === 'function') applyAllGating();
+            if (typeof applyConfigDefaults === 'function') applyConfigDefaults();
+        });
         }
     });
 
@@ -4171,7 +4205,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await loadConfig();
     await checkLoginStatus();
     checkGlobalMaintenance();
-    applyConfigVisibility();
+    applyAllGating();
     setupNavigation();
     setupTabs();
     setupLoginRegisterButtons();
