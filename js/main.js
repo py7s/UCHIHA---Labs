@@ -1179,6 +1179,100 @@ function getAccountData() {
     } catch(e) { return null; }
 }
 
+var hardwareStatus = { bound: false, status: 'unbound', pending_verifications: 0 };
+
+async function ensureHardwareBound() {
+    if (sessionStorage.getItem('uchiha_hardware_bound')) {
+        await checkHardwareBinding();
+        return;
+    }
+    var hwData = HardwareFingerprint.collect();
+    var res = await fetch(apiUrl('/api/hardware/register'), {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(hwData)
+    });
+    if (res.ok) {
+        sessionStorage.setItem('uchiha_hardware_bound', '1');
+        hardwareStatus = { bound: true, status: 'active' };
+    }
+}
+
+async function submitHardwareVerification(changedComponent, proofText, proofImageUrl) {
+    try {
+        var res = await fetch(apiUrl('/api/hardware/verify'), {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                changed_component: changedComponent,
+                proof_text: proofText,
+                proof_image_url: proofImageUrl
+            })
+        });
+        if (res.ok) {
+            var data = await res.json();
+            hardwareStatus.pending_verifications = data.request_id;
+            alert('Verification request submitted. Please wait for admin approval.');
+            return true;
+        }
+    } catch(e) { console.error('[hardware] verify error:', e); }
+    return false;
+}
+
+function showHardwareBlockedModal(data) {
+    var modal = document.createElement('div');
+    modal.className = 'hardware-modal-overlay';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;font-family:Segoe UI,system-ui,sans-serif;padding:20px;';
+    modal.innerHTML = '<div style="text-align:center;max-width:500px;">' +
+        '<div style="font-size:48px;margin-bottom:20px;">🔒</div>' +
+        '<h2 style="color:#ff4444;margin-bottom:15px;">Hardware Change Detected</h2>' +
+        '<p style="color:#ff8080;margin-bottom:20px;">' + (data.message || 'Critical hardware change detected. All products have been deactivated.') + '</p>' +
+        '<div style="background:rgba(255,0,0,0.1);border:1px solid rgba(255,0,0,0.3);padding:15px;border-radius:8px;margin-bottom:20px;text-align:left;">' +
+        '<p style="margin:5px 0;"><strong>Changed components:</strong></p>' +
+        (data.changes || []).map(function(c) { return '<p style="margin:3px 0;color:#ff8080;">• ' + c.component + ': ' + (c.old_value || 'null') + ' → ' + (c.new_value || 'null') + '</p>'; }).join('') +
+        '</div>' +
+        '<p style="color:#aaa;font-size:13px;">Contact support to restore access. Your products are safe and will be restored after verification.</p>' +
+        '</div>';
+    document.body.appendChild(modal);
+}
+
+function showHardwareVerificationModal(data) {
+    if (document.querySelector('.hardware-verification-modal')) return;
+    var modal = document.createElement('div');
+    modal.className = 'hardware-verification-modal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;font-family:Segoe UI,system-ui,sans-serif;padding:20px;';
+    modal.innerHTML = '<div style="text-align:center;max-width:500px;background:rgba(20,20,20,0.95);padding:30px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">' +
+        '<div style="font-size:48px;margin-bottom:20px;">⚠️</div>' +
+        '<h2 style="color:#ffaa00;margin-bottom:15px;">Hardware Change Detected</h2>' +
+        '<p style="color:#ccc;margin-bottom:20px;">' + (data.message || 'Submit proof of purchase for the changed component.') + '</p>' +
+        '<div style="background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.3);padding:15px;border-radius:8px;margin-bottom:20px;text-align:left;">' +
+        (data.changes || []).map(function(c) { return '<p style="margin:3px 0;color:#ffcc80;">• ' + c.component + ': ' + (c.old_value || 'null') + ' → ' + (c.new_value || 'null') + '</p>'; }).join('') +
+        '</div>' +
+        '<div style="text-align:left;margin-bottom:20px;">' +
+        '<label style="display:block;margin-bottom:8px;color:#aaa;font-size:13px;">Proof of purchase (optional)</label>' +
+        '<textarea id="hwProofText" placeholder="Enter receipt number or description..." style="width:100%;padding:10px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:6px;resize:vertical;min-height:80px;"></textarea>' +
+        '<label style="display:block;margin-bottom:8px;color:#aaa;font-size:13px;margin-top:10px;">Image URL (optional)</label>' +
+        '<input type="text" id="hwProofImage" placeholder="https://..." style="width:100%;padding:10px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:6px;">' +
+        '</div>' +
+        '<button id="hwSubmitVerification" style="padding:12px 30px;background:#ffaa00;color:#000;border:none;border-radius:6px;cursor:pointer;font-weight:600;margin-right:10px;">Submit Verification</button>' +
+        '<button id="hwCloseModal" style="padding:12px 30px;background:transparent;color:#aaa;border:1px solid rgba(255,255,255,0.2);border-radius:6px;cursor:pointer;">Close</button>' +
+        '</div>';
+    document.body.appendChild(modal);
+
+    document.getElementById('hwSubmitVerification').addEventListener('click', function() {
+        var changedComponent = (data.changes && data.changes[0]) ? data.changes[0].component : 'unknown';
+        var proofText = document.getElementById('hwProofText').value;
+        var proofImage = document.getElementById('hwProofImage').value;
+        submitHardwareVerification(changedComponent, proofText, proofImage);
+        modal.remove();
+    });
+    document.getElementById('hwCloseModal').addEventListener('click', function() {
+        modal.remove();
+    });
+}
+
 async function checkLoginStatus() {
     var authButtons = document.getElementById('authButtons');
     var userProfileBtn = document.getElementById('userProfileBtn');
@@ -1220,6 +1314,9 @@ async function checkLoginStatus() {
                 console.log('[auth] On login page with valid token, redirecting to /');
                 window.location.replace('/');
                 return;
+            }
+            if (!sessionStorage.getItem('uchiha_hardware_bound')) {
+                setTimeout(function() { ensureHardwareBound(); }, 2000);
             }
             return;
         } catch(e) {
